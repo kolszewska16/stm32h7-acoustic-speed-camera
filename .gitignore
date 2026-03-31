@@ -1,0 +1,32 @@
+# Build outputs
+Debug/
+Release/
+bin/
+obj/
+
+# Generated binaries
+*.elf
+*.bin
+*.hex
+
+# Map and listing files
+*.map
+*.lst
+
+# Object and dependency files
+*.o
+*.d
+
+# Static analysis and stack usage
+*.su
+*.cyclomatic
+
+# IDE specific (Eclipse/STM32CubeIDE)
+.settings/
+.metadata/
+*.launch
+.mxproject
+
+# OS specific
+.DS_Store
+Thumbs.db
