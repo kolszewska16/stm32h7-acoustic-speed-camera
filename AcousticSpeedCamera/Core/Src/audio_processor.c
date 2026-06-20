@@ -7,7 +7,7 @@ int32_t dmabuff_R[BUFF_SIZE];
 
 float32_t hanning_window[SAMPLES];
 float32_t hanning_window_energy = 0.0f;
-float32_t a_weighting_table[SAMPLES];
+float32_t a_weighting_table[SAMPLES / 2];
 
 float32_t fft_inputL[SAMPLES];
 float32_t fft_inputR[SAMPLES];

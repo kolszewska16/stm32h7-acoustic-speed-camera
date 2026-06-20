@@ -53,12 +53,21 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 void vAudioTask(void *argument);
 
 /* USER CODE END FunctionPrototypes */
+
+void StartDefaultTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -89,6 +98,9 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   audioTaskHandle = osThreadNew(vAudioTask, NULL, &audioTask_attr);
@@ -98,6 +110,24 @@ void MX_FREERTOS_Init(void) {
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
 
+}
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* USER CODE BEGIN StartDefaultTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -147,9 +177,25 @@ void vAudioTask(void *parameter) {
 		}
 
 		uint32_t offset = part_idx * SAMPLES;
+
+		int32_t minL = INT32_MAX;
+		int32_t maxL = INT32_MIN;
 		for(int i = 0; i < SAMPLES; i++) {
-			fft_inputL[i] = (float32_t)(dmabuff_L[i + offset] >> 8);
-			fft_inputR[i] = (float32_t)(dmabuff_R[i + offset] >> 8);
+			int32_t v = dmabuff_L[i + offset];
+			if(v < minL) {
+				minL = v;
+			}
+			if(v > maxL) {
+				maxL = v;
+			}
+		}
+		char msg0[128];
+		sprintf(msg0, "min=%ld max=%ld\r\n", minL, maxL);
+		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg0, strlen(msg0), HAL_MAX_DELAY);
+
+		for(int i = 0; i < SAMPLES; i++) {
+			fft_inputL[i] = (float32_t)(dmabuff_L[i + offset] / 131072.0f);
+			fft_inputR[i] = (float32_t)(dmabuff_R[i + offset] / 131072.0f);
 		}
 
 		// removing DC offset
@@ -162,6 +208,12 @@ void vAudioTask(void *parameter) {
 			fft_inputR[i] -= meanR;
 		}
 
+		char dbg2[64];
+		snprintf(dbg2, sizeof(dbg2), "meanL: %.0f, AC_max: %ld\r\n",
+		         meanL * 2147483648.0f,
+		         maxL - minL);
+		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg2, strlen(dbg2), HAL_MAX_DELAY);
+
 		// windowing
 		arm_mult_f32(fft_inputL, hanning_window, fft_inputL, SAMPLES);
 		arm_mult_f32(fft_inputR, hanning_window, fft_inputR, SAMPLES);
@@ -173,6 +225,12 @@ void vAudioTask(void *parameter) {
 		// magnitude & dBA
 		arm_cmplx_mag_f32(fft_outputL, fft_magnitudesL, SAMPLES / 2);
 		arm_cmplx_mag_f32(fft_outputR, fft_magnitudesR, SAMPLES / 2);
+
+		char dbg3[128];
+		snprintf(dbg3, sizeof(dbg3), "mag1=%.2e mag2=%.2e aw1=%.2e aw2=%.2e\r\n",
+		         fft_magnitudesL[1], fft_magnitudesL[2],
+		         a_weighting_table[1], a_weighting_table[2]);
+		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg3, strlen(dbg3), HAL_MAX_DELAY);
 
 		for(int i = 0; i < SAMPLES / 2; i++) {
 			fft_magnitudesL[i] /= SAMPLES;
@@ -191,8 +249,12 @@ void vAudioTask(void *parameter) {
 
 		float32_t dBA_L = 0.0f;
 		float32_t dBA_R = 0.0f;
-		dBA_L = 10.0f * log10f(total_powerL);
-		dBA_R = 10.0f * log10f(total_powerR);
+		dBA_L = 10.0f * log10f(total_powerL + 1e-30f) + 120.0f;
+		dBA_R = 10.0f * log10f(total_powerR + 1e-30f) + MIC_DBFS_TO_DBSPL;
+
+		char dbg[128];
+		snprintf(dbg, sizeof(dbg), "powerL: %.2e, dBA_L: %.2f\r\n", total_powerL, dBA_L);
+		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
 
 		char msg[1024];
 		sprintf(msg, "dBA L: %.2f, dBA R: %.2f\r\n", dBA_L, dBA_R);

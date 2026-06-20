@@ -69,18 +69,20 @@ void init_hanning_window(void) {
 		hanning_window[i] = 0.5f * (1 - cosf((2 * PI * i) / (SAMPLES - 1)));
 		hanning_window_energy += hanning_window[i] * hanning_window[i];
 	}
-	hanning_window_energy /= SAMPLES;
+	char dbg[64];
+	snprintf(dbg, sizeof(dbg), "win_energy: %.2f\r\n", hanning_window_energy);
+	HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
 }
 
 void init_a_weighting_table(void) {
-	for(int i = 0; i < SAMPLES; i++) {
+	for(int i = 1; i < SAMPLES / 2; i++) {
 		float32_t f = i * FS / SAMPLES;
 		float32_t f2 = f * f;
-		float32_t numerator = powf(12194.0f, 2.0f);
+		float32_t numerator = powf(12194.0f, 2.0f) * f2 * f2;
 		float32_t denominator = (f2 + powf(20.6f, 2.0f)) * sqrtf((f2 + powf(107.7f, 2.0f)) * (f2 + powf(737.9f, 2.0f))) * (f2 + powf(12194.0f, 2.0f));
 		float32_t Ra = numerator / denominator;
 		float32_t Af = 20.0f * log10f(Ra) + 2.0f;
-		a_weighting_table[i] = powf(10.0f, Af / 20.0f);
+		a_weighting_table[i] = powf(10.0f, Af / 10.0f);
 	}
 }
 /* USER CODE END 0 */

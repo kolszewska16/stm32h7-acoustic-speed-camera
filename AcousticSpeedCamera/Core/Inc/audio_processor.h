@@ -11,7 +11,7 @@ extern int32_t dmabuff_R[BUFF_SIZE];
 
 extern float32_t hanning_window[SAMPLES];
 extern float32_t hanning_window_energy;
-extern float32_t a_weighting_table[SAMPLES];
+extern float32_t a_weighting_table[SAMPLES / 2];
 
 extern float32_t fft_inputL[SAMPLES];
 extern float32_t fft_inputR[SAMPLES];
