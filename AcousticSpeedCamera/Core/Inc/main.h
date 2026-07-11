@@ -60,10 +60,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SD_CD_Pin GPIO_PIN_10
+#define SD_CD_GPIO_Port GPIOE
+#define SD_CS_Pin GPIO_PIN_11
+#define SD_CS_GPIO_Port GPIOE
+#define LD_RED_Pin GPIO_PIN_14
+#define LD_RED_GPIO_Port GPIOB
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
 #define SWCLK_GPIO_Port GPIOA
+#define LD_YELLOW_Pin GPIO_PIN_1
+#define LD_YELLOW_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 
