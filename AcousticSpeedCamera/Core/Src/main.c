@@ -27,6 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
 #include "audio_processor.h"
 #include "sd_spi.h"
 
@@ -218,6 +219,33 @@ int main(void)
 		  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
 	  }
   }
+
+  HAL_Delay(100);
+
+  uint8_t wbuf[512];
+  uint8_t rbuf[512];
+
+  for(int i = 0; i < 512; i++) {
+	  wbuf[i] = i & 0xFF;
+  }
+
+  sdStatus_t ws = SD_WriteBlock(10000, wbuf);
+  sdStatus_t rs = SD_ReadBlock(10000, rbuf);
+
+  int ok = (ws == SD_OK) && (rs == SD_OK) && (memcmp(wbuf, rbuf, 512) == 0);
+  if(ok == 1) {
+	  HAL_Delay(1000);
+	  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
+	  HAL_Delay(1000);
+	  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
+	  HAL_Delay(1000);
+  }
+  else {
+	  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+	  HAL_Delay(1000);
+	  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
+  }
+
   /* USER CODE END 2 */
 
   /* Init scheduler */

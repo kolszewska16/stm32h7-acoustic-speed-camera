@@ -2,7 +2,7 @@
 #include <string.h>
 
 #define SD_TIMEOUT_MS 200
-#define SD_INIT_CLK_TRIES 10
+#define SD_INIT_CLK_TRIES 100
 
 #define CMD0 0		// GO_IDLE_STATE
 #define CMD1 1		// SEND_OP_COND
@@ -16,6 +16,7 @@
 #define CMD24 24	// WRITE_BLOCK
 #define CMD55 55	// APP_CMD
 #define CMD58 58	// READ_OCR
+#define CMD59 59	// CRC_ON_OFF
 #define ACMD41 41	// SD_SEND_OP_COND
 
 static SPI_HandleTypeDef *s_hspi;
@@ -82,8 +83,9 @@ static uint8_t sd_send_cmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
 	frame[4] = arg & 0xFF;
 	frame[5] = crc;
 
-	CS_LOW();
 	spi_clk_bytes(1);
+	CS_LOW();
+
 	for(int i = 0; i < 6; i++) {
 		spi_txrx(frame[i]);
 	}
@@ -104,10 +106,12 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 	s_cs_pin = cs_pin;
 	s_card_type = SD_TYPE_UNKNOWN;
 
-	CS_HIGH();
-	spi_clk_bytes(10);
+	HAL_Delay(200);
 
-	// CMD0 -> idle state, waiting for R1 == 0x01
+	CS_HIGH();
+	spi_clk_bytes(20);
+
+	// CMD0 - idle state, waiting for R1 == 0x01
 	uint8_t r1 = 0xFF;
 	int tries = SD_INIT_CLK_TRIES;
 	while(r1 != 0x01 && tries > 0) {
@@ -119,6 +123,10 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 	if(r1 != 0x01) {
 		return SD_ERROR_NO_CARD;
 	}
+
+	// CMD59 - turning off CRC check
+//	r1 = sd_send_cmd(CMD59, 0, 0x01);
+//	sd_end_cmd();
 
 	// CMD8 - checking version of the interface (SDv2 or SDv1/MMC)
 	r1 = sd_send_cmd(CMD8, 0x1AA, 0x87);
@@ -137,7 +145,7 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 
 	uint32_t start = HAL_GetTick();
 	while(r1 != 0x00) {
-		sd_send_cmd(CMD55, 0, 0x01);
+		r1 = sd_send_cmd(CMD55, 0, 0x01);
 		sd_end_cmd();
 		r1 = sd_send_cmd(ACMD41, is_v2 ? (1UL << 30) : 0, 0x01); // HCS bit for SDHC
 		sd_end_cmd();
