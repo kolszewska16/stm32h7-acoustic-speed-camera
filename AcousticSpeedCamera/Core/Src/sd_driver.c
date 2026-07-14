@@ -5,9 +5,11 @@
 extern SPI_HandleTypeDef hspi4;
 static volatile DSTATUS s_stat = STA_NOINIT;
 
-DSTATUS SD_disk_init(BYTE lun) {
-	(void) lun;
-	if(SD_Init(&hspi4, SD_CS_GPIO_Port, SD_CS_Pin) == SD_OK) {
+DSTATUS SD_disk_init(BYTE pdrv) {
+	(void)pdrv;
+	sdStatus_t st = SD_Init(&hspi4, SD_CS_GPIO_Port, SD_CS_Pin);
+
+	if(st == SD_OK) {
 		s_stat &= ~STA_NOINIT;
 	}
 	else {
@@ -17,13 +19,13 @@ DSTATUS SD_disk_init(BYTE lun) {
 	return s_stat;
 }
 
-DSTATUS SD_disk_status(BYTE lun) {
-	(void)lun;
+DSTATUS SD_disk_status(BYTE pdrv) {
+	(void)pdrv;
 	return s_stat;
 }
 
-DRESULT SD_disk_read(BYTE lun, BYTE *buff, DWORD sector, UINT count) {
-	(void)lun;
+DRESULT SD_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, UINT count) {
+	(void)pdrv;
 	if(s_stat & STA_NOINIT) {
 		return RES_NOTRDY;
 	}
@@ -37,8 +39,8 @@ DRESULT SD_disk_read(BYTE lun, BYTE *buff, DWORD sector, UINT count) {
 	return RES_OK;
 }
 
-DRESULT SD_disk_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count) {
-	(void)lun;
+DRESULT SD_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, UINT count) {
+	(void)pdrv;
 	if(s_stat & STA_NOINIT) {
 		return RES_NOTRDY;
 	}
@@ -52,8 +54,8 @@ DRESULT SD_disk_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count) {
 	return RES_OK;
 }
 
-DRESULT SD_disk_ioctl(BYTE lun, BYTE cmd, void *buff) {
-	(void)lun;
+DRESULT SD_disk_ioctl(BYTE pdrv, BYTE cmd, void *buff) {
+	(void)pdrv;
 	switch(cmd) {
 		case CTRL_SYNC:
 			return RES_OK;

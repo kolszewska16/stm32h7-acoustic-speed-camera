@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "fatfs.h"
 #include "hardware.h"
 #include "os_objects.h"
 #include "audio_processor.h"

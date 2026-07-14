@@ -1,5 +1,6 @@
 #include "sd_spi.h"
 #include <string.h>
+#include "gpio.h"
 
 #define SD_TIMEOUT_MS 200
 #define SD_INIT_CLK_TRIES 100
@@ -34,7 +35,14 @@ static void CS_HIGH(void) {
 
 static uint8_t spi_txrx(uint8_t data) {
 	uint8_t rx = 0xFF;
-	HAL_SPI_TransmitReceive(s_hspi, &data, &rx, 1, HAL_MAX_DELAY);
+
+	HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(s_hspi, &data, &rx, 1, 10);
+
+	if(status != HAL_OK) {
+		s_hspi->State = HAL_SPI_STATE_READY;
+		return 0xFF;
+	}
+
 	return rx;
 }
 
@@ -43,15 +51,14 @@ static void spi_clk_bytes(uint8_t n) {
 	uint8_t rx;
 
 	for(uint8_t i = 0; i < n; i++) {
-		HAL_SPI_TransmitReceive(s_hspi, &dummy, &rx, 1, HAL_MAX_DELAY);
+		HAL_SPI_TransmitReceive(s_hspi, &dummy, &rx, 1, 10);
 	}
 }
 
 static uint8_t sd_wait_response(void) {
-	uint32_t start = HAL_GetTick();
 	uint8_t r = 0xFF;
 
-	while((HAL_GetTick() - start) < SD_TIMEOUT_MS) {
+	for(uint32_t i = 0; i < 2000; i++) {
 		r = spi_txrx(0xFF);
 		if(r != 0xFF) {
 			return r;
@@ -62,15 +69,13 @@ static uint8_t sd_wait_response(void) {
 }
 
 static sdStatus_t sd_wait_no_busy(void) {
-	uint32_t start = HAL_GetTick();
-
-	while(spi_txrx(0xFF) != 0xFF) {
-		if((HAL_GetTick() - start) > 500) {
-			return SD_ERROR_TIMEOUT;
+	for(uint32_t i = 0; i < 50000; i++) {
+		if(spi_txrx(0xFF) == 0xFF) {
+			return SD_OK;
 		}
 	}
 
-	return SD_OK;
+	return SD_ERROR_TIMEOUT;
 }
 
 static uint8_t sd_send_cmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
@@ -108,8 +113,16 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 
 	HAL_Delay(200);
 
+	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+	HAL_Delay(100);
+	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
+
 	CS_HIGH();
 	spi_clk_bytes(20);
+
+	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+	HAL_Delay(100);
+	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
 
 	// CMD0 - idle state, waiting for R1 == 0x01
 	uint8_t r1 = 0xFF;
@@ -120,13 +133,13 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 		tries--;
 	}
 
+	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+	HAL_Delay(100);
+	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
+
 	if(r1 != 0x01) {
 		return SD_ERROR_NO_CARD;
 	}
-
-	// CMD59 - turning off CRC check
-//	r1 = sd_send_cmd(CMD59, 0, 0x01);
-//	sd_end_cmd();
 
 	// CMD8 - checking version of the interface (SDv2 or SDv1/MMC)
 	r1 = sd_send_cmd(CMD8, 0x1AA, 0x87);
@@ -143,15 +156,18 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 		return SD_ERROR_CMD;
 	}
 
-	uint32_t start = HAL_GetTick();
-	while(r1 != 0x00) {
+	uint32_t init_retries = 2000;
+	while(r1 != 0x00 && init_retries > 0) {
 		r1 = sd_send_cmd(CMD55, 0, 0x01);
 		sd_end_cmd();
 		r1 = sd_send_cmd(ACMD41, is_v2 ? (1UL << 30) : 0, 0x01); // HCS bit for SDHC
 		sd_end_cmd();
-		if((HAL_GetTick() - start) > 1000) {
-			return SD_ERROR_TIMEOUT;
-		}
+		init_retries--;
+		HAL_Delay(1);
+	}
+
+	if(r1 != 0x00) {
+		return SD_ERROR_TIMEOUT;
 	}
 
 	// CMD58 - checking type of the card (CSS bit)
@@ -175,6 +191,16 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 		if(r1 != 0x00) {
 			return SD_ERROR_CMD;
 		}
+	}
+
+	if(HAL_SPI_DeInit(s_hspi) != HAL_OK) {
+		return SD_ERROR_CMD;
+	}
+
+	s_hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+
+	if(HAL_SPI_Init(s_hspi) != HAL_OK) {
+		return SD_ERROR_CMD;
 	}
 
 	return SD_OK;

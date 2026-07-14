@@ -27,6 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include <string.h>
 #include "audio_processor.h"
 #include "sd_spi.h"
@@ -53,6 +54,7 @@
 COM_InitTypeDef BspCOMInit;
 
 /* USER CODE BEGIN PV */
+//ALIGN_32BYTES(static FATFS fs);
 
 /* USER CODE END PV */
 
@@ -73,9 +75,9 @@ void init_hanning_window(void) {
 		hanning_window[i] = 0.5f * (1 - cosf((2 * PI * i) / (SAMPLES - 1)));
 		hanning_window_energy += hanning_window[i] * hanning_window[i];
 	}
-	char dbg[64];
-	snprintf(dbg, sizeof(dbg), "win_energy: %.2f\r\n", hanning_window_energy);
-	HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
+//	char dbg[64];
+//	snprintf(dbg, sizeof(dbg), "win_energy: %.2f\r\n", hanning_window_energy);
+//	HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
 }
 
 void init_a_weighting_table(void) {
@@ -125,127 +127,89 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_DFSDM1_Init();
-  MX_FATFS_Init();
   MX_SPI4_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  init_hanning_window();
-  init_a_weighting_table();
+    init_hanning_window();
+    init_a_weighting_table();
 
-/*  for(int i = 0; i < 10; i++) {
-	  HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_12);
-	  HAL_Delay(1000);
-  }*/
+    for(int i = 0; i < 4; i++) {
+    	HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
+    	HAL_Delay(200);
+    	HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
+    	HAL_Delay(200);
+    }
 
-/*  while(1) {
-	  uint8_t tx = 0xFF;
-	  uint8_t rx;
-	  HAL_SPI_TransmitReceive(&hspi4, &tx, &rx, 1, HAL_MAX_DELAY);
-  }*/
+    HAL_Delay(1000);
+    FATFS fs;
+    FRESULT fr = f_mount(&fs, USERPath, 1);
 
-  // no sd card detected
-  if(HAL_GPIO_ReadPin(SD_CD_GPIO_Port, SD_CD_Pin) == GPIO_PIN_SET) {
-	  for(int i = 0; i < 2; i++) {
-		  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
-		  HAL_Delay(1000);
-		  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
-		  HAL_Delay(1000);
-	  }
-  }
-  // sd card detected
-  else if(HAL_GPIO_ReadPin(SD_CD_GPIO_Port, SD_CD_Pin) == GPIO_PIN_RESET) {
-	  for(int i = 0; i < 4; i++) {
-		  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
-		  HAL_Delay(1000);
-		  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
-		  HAL_Delay(1000);
-	  }
-  }
+    if(fr == FR_OK) {
+        FIL file;
+        UINT bw;
 
-  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);
-  HAL_Delay(1000);
+        fr = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
+        if(fr == FR_OK) {
+        	fr = f_write(&file, "hello sd card!\r\n", 16, &bw);
+        	if(fr == FR_OK) {
+        		f_close(&file);
+                for(int i = 0; i < 3; i++) {
+                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+                    HAL_Delay(1000);
+                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
+                    HAL_Delay(1000);
+                }
+        	}
+        }
 
-  sdStatus_t st = SD_Init(&hspi4, SD_CS_GPIO_Port, SD_CS_Pin);
+        fr = f_open(&file, "test.txt", FA_READ);
+        if(fr == FR_OK) {
+        	char buff[32];
+        	UINT br;
+        	fr = f_read(&file, buff, sizeof(buff) - 1, &br);
+        	if(fr == FR_OK) {
+        		buff[br] = '\0';
+        		f_close(&file);
+        		if(memcmp(buff, "hello sd card!\r\n", 16) == 0) {
+                    HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
+                    HAL_Delay(1000);
+                    HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
+                    HAL_Delay(1000);
+        		}
+        	}
+        }
 
-  if(st == SD_OK) {
-	  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
-	  HAL_SPI_DeInit(&hspi4);
-	  hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-	  HAL_SPI_Init(&hspi4);
-  }
-  else {
-	  if(st == SD_ERROR_TIMEOUT) {
-		  for(int i = 0; i < 1; i++) {
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-			  HAL_Delay(1000);
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-			  HAL_Delay(1000);
-		  }
-		  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	  }
-	  else if(st == SD_ERROR_CMD) {
-		  for(int i = 0; i < 2; i++) {
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-			  HAL_Delay(1000);
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-			  HAL_Delay(1000);
-		  }
-		  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	  }
-	  else if(st == SD_ERROR_NO_CARD) {
-		  for(int i = 0; i < 3; i++) {
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-			  HAL_Delay(1000);
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-			  HAL_Delay(1000);
-		  }
-		  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	  }
-	  else if(st == SD_ERROR_WRITE) {
-		  for(int i = 0; i < 4; i++) {
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-			  HAL_Delay(1000);
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-			  HAL_Delay(1000);
-		  }
-		  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	  }
-	  else if(st == SD_ERROR_READ) {
-		  for(int i = 0; i < 5; i++) {
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-			  HAL_Delay(1000);
-			  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-			  HAL_Delay(1000);
-		  }
-		  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	  }
-  }
+        fr = f_open(&file, "test.txt", FA_WRITE | FA_OPEN_APPEND);
+        if(fr == FR_OK) {
+        	fr = f_write(&file, "hello world!\r\n", 14, &bw);
+        	if(fr == FR_OK) {
+        		f_close(&file);
+                for(int i = 0; i < 3; i++) {
+                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+                    HAL_Delay(1000);
+                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
+                    HAL_Delay(1000);
+                }
+        	}
+        }
 
-  HAL_Delay(100);
+        else {
+            HAL_Delay(1000);
+            for(int i = 0; i < (int)fr; i++) {
+                HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+                HAL_Delay(200);
+                HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
+                HAL_Delay(200);
+            }
+        }
+    }
+    else {
+        HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
+    }
 
-  uint8_t wbuf[512];
-  uint8_t rbuf[512];
-
-  for(int i = 0; i < 512; i++) {
-	  wbuf[i] = i & 0xFF;
-  }
-
-  sdStatus_t ws = SD_WriteBlock(10000, wbuf);
-  sdStatus_t rs = SD_ReadBlock(10000, rbuf);
-
-  int ok = (ws == SD_OK) && (rs == SD_OK) && (memcmp(wbuf, rbuf, 512) == 0);
-  if(ok == 1) {
-	  HAL_Delay(1000);
-	  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
-	  HAL_Delay(1000);
-	  HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
-	  HAL_Delay(1000);
-  }
-  else {
-	  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	  HAL_Delay(1000);
-	  HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-  }
-
+    while(1) {
+        HAL_Delay(100);
+    }
   /* USER CODE END 2 */
 
   /* Init scheduler */
