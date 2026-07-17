@@ -1,6 +1,9 @@
 #include "sd_spi.h"
+#include <stdint.h>
 #include <string.h>
 #include "gpio.h"
+#include "cmsis_os.h"
+#include "os_objects.h"
 
 #define SD_TIMEOUT_MS 200
 #define SD_INIT_CLK_TRIES 100
@@ -36,7 +39,7 @@ static void CS_HIGH(void) {
 static uint8_t spi_txrx(uint8_t data) {
 	uint8_t rx = 0xFF;
 
-	HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(s_hspi, &data, &rx, 1, 10);
+	HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(s_hspi, &data, &rx, 1, HAL_MAX_DELAY);
 
 	if(status != HAL_OK) {
 		s_hspi->State = HAL_SPI_STATE_READY;
@@ -46,19 +49,32 @@ static uint8_t spi_txrx(uint8_t data) {
 	return rx;
 }
 
+static sdStatus_t spi_block_txrx_dma(const uint8_t *tx, uint8_t *rx, uint16_t len) {
+	if(HAL_SPI_TransmitReceive_DMA(s_hspi, (uint8_t*)tx, rx, len) != HAL_OK) {
+		return SD_ERROR_READ;
+	}
+
+	if(osSemaphoreAcquire(s_spi_dma_sem, pdMS_TO_TICKS(200)) != osOK) {
+		return SD_ERROR_TIMEOUT;
+	}
+
+	return SD_OK;
+}
+
 static void spi_clk_bytes(uint8_t n) {
 	uint8_t dummy = 0xFF;
 	uint8_t rx;
 
 	for(uint8_t i = 0; i < n; i++) {
-		HAL_SPI_TransmitReceive(s_hspi, &dummy, &rx, 1, 10);
+		HAL_SPI_TransmitReceive(s_hspi, &dummy, &rx, 1, HAL_MAX_DELAY);
 	}
 }
 
 static uint8_t sd_wait_response(void) {
+	uint32_t start = HAL_GetTick();
 	uint8_t r = 0xFF;
 
-	for(uint32_t i = 0; i < 2000; i++) {
+	while((HAL_GetTick() - start) < SD_TIMEOUT_MS) {
 		r = spi_txrx(0xFF);
 		if(r != 0xFF) {
 			return r;
@@ -69,13 +85,15 @@ static uint8_t sd_wait_response(void) {
 }
 
 static sdStatus_t sd_wait_no_busy(void) {
-	for(uint32_t i = 0; i < 50000; i++) {
-		if(spi_txrx(0xFF) == 0xFF) {
-			return SD_OK;
+	uint32_t start = HAL_GetTick();
+
+	while(spi_txrx(0xFF) != 0xFF) {
+		if((HAL_GetTick() - start) > 500) {
+			return SD_ERROR_TIMEOUT;
 		}
 	}
 
-	return SD_ERROR_TIMEOUT;
+	return SD_OK;
 }
 
 static uint8_t sd_send_cmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
@@ -113,16 +131,8 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 
 	HAL_Delay(200);
 
-	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	HAL_Delay(100);
-	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-
 	CS_HIGH();
 	spi_clk_bytes(20);
-
-	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	HAL_Delay(100);
-	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
 
 	// CMD0 - idle state, waiting for R1 == 0x01
 	uint8_t r1 = 0xFF;
@@ -132,10 +142,6 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 		sd_end_cmd();
 		tries--;
 	}
-
-	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-	HAL_Delay(100);
-	HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
 
 	if(r1 != 0x01) {
 		return SD_ERROR_NO_CARD;
@@ -238,7 +244,43 @@ sdStatus_t SD_ReadBlock(uint32_t block_addr, uint8_t *buf) {
 	return SD_OK;
 }
 
+sdStatus_t SD_ReadBlock_DMA(uint32_t block_addr, uint8_t *buf) {
+	// SDSC -> byte addressing, SDHC/SDXC -> block addressing
+	uint32_t addr = (s_card_type == SD_TYPE_SDHC_SDXC) ? block_addr : (block_addr * 512);
+
+	uint8_t r1 = sd_send_cmd(CMD17, addr, 0x01);
+	if(r1 != 0x00) {
+		sd_end_cmd();
+		return SD_ERROR_READ;
+	}
+
+	// waiting for 0xFE (data start token)
+	uint32_t start = HAL_GetTick();
+	uint8_t token = 0x00;
+	while(token != 0xFE) {
+		token = spi_txrx(0xFF);
+		if((HAL_GetTick() - start) > SD_TIMEOUT_MS) {
+			sd_end_cmd();
+			return SD_ERROR_TIMEOUT;
+		}
+	}
+
+	uint8_t tx_dummy[512];
+	memset(tx_dummy, 0xFF, 512);
+	if(spi_block_txrx_dma(tx_dummy, buf, 512) != SD_OK) {
+		sd_end_cmd();
+		return SD_ERROR_TIMEOUT;
+	}
+
+	spi_txrx(0xFF);
+	spi_txrx(0xFF);
+	sd_end_cmd();
+
+	return SD_OK;
+}
+
 sdStatus_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buf) {
+	// SDSC -> byte addressing, SDHC/SDXC -> block addressing
 	uint32_t addr = (s_card_type == SD_TYPE_SDHC_SDXC) ? block_addr : (block_addr * 512);
 
 	uint8_t r1 = sd_send_cmd(CMD24, addr, 0x01);
@@ -252,6 +294,43 @@ sdStatus_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buf) {
 
 	for(int i = 0; i < 512; i++) {
 		spi_txrx(buf[i]);
+	}
+
+	spi_txrx(0xFF);
+	spi_txrx(0xFF);
+
+	uint8_t data_resp = spi_txrx(0xFF);
+	if((data_resp & 0x1F) != 0x05) {
+		sd_end_cmd();
+		return SD_ERROR_WRITE;
+	}
+
+	if(sd_wait_no_busy() != SD_OK) {
+		sd_end_cmd();
+		return SD_ERROR_TIMEOUT;
+	}
+
+	sd_end_cmd();
+	return SD_OK;
+}
+
+sdStatus_t SD_WriteBlock_DMA(uint32_t block_addr, const uint8_t *buf) {
+	// SDSC -> byte addressing, SDHC/SDXC -> block addressing
+	uint32_t addr = (s_card_type == SD_TYPE_SDHC_SDXC) ? block_addr : (block_addr * 512);
+
+	uint8_t r1 = sd_send_cmd(CMD24, addr, 0x01);
+	if(r1 != 0x00) {
+		sd_end_cmd();
+		return SD_ERROR_WRITE;
+	}
+
+	spi_txrx(0xFF);
+	spi_txrx(0xFE); // data start token
+
+	uint8_t rx_dummy[512];
+	if(spi_block_txrx_dma(buf, rx_dummy, 512) != SD_OK) {
+		sd_end_cmd();
+		return SD_ERROR_WRITE;
 	}
 
 	spi_txrx(0xFF);

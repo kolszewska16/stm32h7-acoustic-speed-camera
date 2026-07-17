@@ -22,7 +22,10 @@ typedef enum {
 sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_pin);
 
 sdStatus_t SD_ReadBlock(uint32_t block_addr, uint8_t *buf);
+sdStatus_t SD_ReadBlock_DMA(uint32_t block_addr, uint8_t *buf);
+
 sdStatus_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buf);
+sdStatus_t SD_WriteBlock_DMA(uint32_t block_addr, const uint8_t *buf);
 
 sdCardType_t SD_GetCardType(void);
 uint64_t SD_GetCardSizeBytes(void);

@@ -1,8 +1,6 @@
-#include "ff_gen_drv.h"
+#include "sd_driver.h"
 #include "sd_spi.h"
-#include "main.h"
 
-extern SPI_HandleTypeDef hspi4;
 static volatile DSTATUS s_stat = STA_NOINIT;
 
 DSTATUS SD_disk_init(BYTE pdrv) {
@@ -31,7 +29,7 @@ DRESULT SD_disk_read(BYTE pdrv, BYTE *buff, DWORD sector, UINT count) {
 	}
 
 	for(UINT i = 0; i < count; i++) {
-		if(SD_ReadBlock(sector + i, buff + i * 512) != SD_OK) {
+		if(SD_ReadBlock_DMA(sector + i, buff + i * 512) != SD_OK) {
 			return RES_ERROR;
 		}
 	}
@@ -46,7 +44,7 @@ DRESULT SD_disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, UINT count) {
 	}
 
 	for(UINT i = 0; i < count; i++) {
-		if(SD_WriteBlock(sector + i, buff + i * 512) != SD_OK) {
+		if(SD_WriteBlock_DMA(sector + i, buff + i * 512) != SD_OK) {
 			return RES_ERROR;
 		}
 	}

@@ -32,6 +32,7 @@
 #include "hardware.h"
 #include "os_objects.h"
 #include "audio_processor.h"
+#include "sd_logger.h"
 
 /* USER CODE END Includes */
 
@@ -84,10 +85,14 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+	uartMutex = osMutexNew(&uartMutex_attr);
+
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+	s_spi_dma_sem = osSemaphoreNew(1, 0, NULL);
+
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -96,6 +101,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+	xLogQueue = xQueueCreate(32, sizeof(LogEntry_t));
+
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -105,6 +112,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   audioTaskHandle = osThreadNew(vAudioTask, NULL, &audioTask_attr);
+  sdLoggerTaskHandle = osThreadNew(vSDLogTask, NULL, &sdLoggerTask_attr);
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -154,17 +163,24 @@ void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
 }
 
 void vAudioTask(void *parameter) {
-	const char *msg = "audio task start\r\n";
-	HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
+		const char *msg = "[INFO] audio task start\r\n";
+		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+		osMutexRelease(uartMutex);
+	}
 
 	HAL_StatusTypeDef state_L = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, dmabuff_L, BUFF_SIZE);
 	HAL_StatusTypeDef state_R = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter1, dmabuff_R, BUFF_SIZE);
 
 	if(state_L != HAL_OK || state_R != HAL_OK) {
-		const char *msg = "DFSDM start error\r\n";
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+		if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
+			const char *msg = "[ERROR] DFSDM: initialization failed\r\n";
+			HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+			osMutexRelease(uartMutex);
+		}
 	}
 
+	uint32_t count_lost_entries = 0;
 	arm_rfft_fast_init_f32(&fft_handler, FFT_SIZE);
 
 	while(1) {
@@ -190,9 +206,6 @@ void vAudioTask(void *parameter) {
 				maxL = v;
 			}
 		}
-		char msg0[128];
-		sprintf(msg0, "min=%ld max=%ld\r\n", minL, maxL);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg0, strlen(msg0), HAL_MAX_DELAY);
 
 		for(int i = 0; i < SAMPLES; i++) {
 			fft_inputL[i] = (float32_t)(dmabuff_L[i + offset] / 131072.0f);
@@ -209,12 +222,6 @@ void vAudioTask(void *parameter) {
 			fft_inputR[i] -= meanR;
 		}
 
-		char dbg2[64];
-		snprintf(dbg2, sizeof(dbg2), "meanL: %.0f, AC_max: %ld\r\n",
-		         meanL * 2147483648.0f,
-		         maxL - minL);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg2, strlen(dbg2), HAL_MAX_DELAY);
-
 		// windowing
 		arm_mult_f32(fft_inputL, hanning_window, fft_inputL, SAMPLES);
 		arm_mult_f32(fft_inputR, hanning_window, fft_inputR, SAMPLES);
@@ -226,12 +233,6 @@ void vAudioTask(void *parameter) {
 		// magnitude & dBA
 		arm_cmplx_mag_f32(fft_outputL, fft_magnitudesL, SAMPLES / 2);
 		arm_cmplx_mag_f32(fft_outputR, fft_magnitudesR, SAMPLES / 2);
-
-		char dbg3[128];
-		snprintf(dbg3, sizeof(dbg3), "mag1=%.2e mag2=%.2e aw1=%.2e aw2=%.2e\r\n",
-		         fft_magnitudesL[1], fft_magnitudesL[2],
-		         a_weighting_table[1], a_weighting_table[2]);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg3, strlen(dbg3), HAL_MAX_DELAY);
 
 		for(int i = 0; i < SAMPLES / 2; i++) {
 			fft_magnitudesL[i] /= SAMPLES;
@@ -248,19 +249,30 @@ void vAudioTask(void *parameter) {
 		total_powerL /= hanning_window_energy;
 		total_powerR /= hanning_window_energy;
 
-		float32_t dBA_L = 0.0f;
+		float32_t power_avg = (total_powerL + total_powerR) / 2.0f;
+		float32_t dBA_avg = 10.0f * log10f(power_avg + 1e-30f) + MIC_DBFS_TO_DBSPL;
+
+/*		float32_t dBA_L = 0.0f;
 		float32_t dBA_R = 0.0f;
-		dBA_L = 10.0f * log10f(total_powerL + 1e-30f) + 120.0f;
-		dBA_R = 10.0f * log10f(total_powerR + 1e-30f) + MIC_DBFS_TO_DBSPL;
+		dBA_L = 10.0f * log10f(total_powerL + 1e-30f) + MIC_DBFS_TO_DBSPL;
+		dBA_R = 10.0f * log10f(total_powerR + 1e-30f) + MIC_DBFS_TO_DBSPL;*/
 
-		char dbg[128];
-		snprintf(dbg, sizeof(dbg), "powerL: %.2e, dBA_L: %.2f\r\n", total_powerL, dBA_L);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
+		LogEntry_t entry;
+		entry.timestamp_ms = HAL_GetTick();
+		entry.power = power_avg;
+		entry.dbspl_avg = dBA_avg;
 
-		char msg[1024];
-		sprintf(msg, "dBA L: %.2f, dBA R: %.2f\r\n", dBA_L, dBA_R);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), 10);
+		if(xQueueSend(xLogQueue, &entry, pdMS_TO_TICKS(10)) != pdTRUE) {
+			count_lost_entries++;
+			if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
+				char msg[64];
+				snprintf(msg, sizeof(msg), "[WARNING] lost entries: %lu\r\n", count_lost_entries);
+				HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+				osMutexRelease(uartMutex);
+			}
+		}
 	}
+
 	vTaskDelete(NULL);
 }
 

@@ -31,6 +31,7 @@
 #include <string.h>
 #include "audio_processor.h"
 #include "sd_spi.h"
+#include "os_objects.h"
 
 /* USER CODE END Includes */
 
@@ -54,7 +55,6 @@
 COM_InitTypeDef BspCOMInit;
 
 /* USER CODE BEGIN PV */
-//ALIGN_32BYTES(static FATFS fs);
 
 /* USER CODE END PV */
 
@@ -70,14 +70,17 @@ void init_a_weighting_table(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if(hspi->Instance == SPI4) {
+		osSemaphoreRelease(s_spi_dma_sem);
+	}
+}
+
 void init_hanning_window(void) {
 	for(int i = 0; i < SAMPLES; i++) {
 		hanning_window[i] = 0.5f * (1 - cosf((2 * PI * i) / (SAMPLES - 1)));
 		hanning_window_energy += hanning_window[i] * hanning_window[i];
 	}
-//	char dbg[64];
-//	snprintf(dbg, sizeof(dbg), "win_energy: %.2f\r\n", hanning_window_energy);
-//	HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
 }
 
 void init_a_weighting_table(void) {
@@ -127,89 +130,12 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_DFSDM1_Init();
-  MX_SPI4_Init();
   MX_FATFS_Init();
+  MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
-    init_hanning_window();
-    init_a_weighting_table();
+  init_hanning_window();
+  init_a_weighting_table();
 
-    for(int i = 0; i < 4; i++) {
-    	HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
-    	HAL_Delay(200);
-    	HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
-    	HAL_Delay(200);
-    }
-
-    HAL_Delay(1000);
-    FATFS fs;
-    FRESULT fr = f_mount(&fs, USERPath, 1);
-
-    if(fr == FR_OK) {
-        FIL file;
-        UINT bw;
-
-        fr = f_open(&file, "test.txt", FA_WRITE | FA_CREATE_ALWAYS);
-        if(fr == FR_OK) {
-        	fr = f_write(&file, "hello sd card!\r\n", 16, &bw);
-        	if(fr == FR_OK) {
-        		f_close(&file);
-                for(int i = 0; i < 3; i++) {
-                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-                    HAL_Delay(1000);
-                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-                    HAL_Delay(1000);
-                }
-        	}
-        }
-
-        fr = f_open(&file, "test.txt", FA_READ);
-        if(fr == FR_OK) {
-        	char buff[32];
-        	UINT br;
-        	fr = f_read(&file, buff, sizeof(buff) - 1, &br);
-        	if(fr == FR_OK) {
-        		buff[br] = '\0';
-        		f_close(&file);
-        		if(memcmp(buff, "hello sd card!\r\n", 16) == 0) {
-                    HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_SET);
-                    HAL_Delay(1000);
-                    HAL_GPIO_WritePin(LD_YELLOW_GPIO_Port, LD_YELLOW_Pin, GPIO_PIN_RESET);
-                    HAL_Delay(1000);
-        		}
-        	}
-        }
-
-        fr = f_open(&file, "test.txt", FA_WRITE | FA_OPEN_APPEND);
-        if(fr == FR_OK) {
-        	fr = f_write(&file, "hello world!\r\n", 14, &bw);
-        	if(fr == FR_OK) {
-        		f_close(&file);
-                for(int i = 0; i < 3; i++) {
-                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-                    HAL_Delay(1000);
-                    HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-                    HAL_Delay(1000);
-                }
-        	}
-        }
-
-        else {
-            HAL_Delay(1000);
-            for(int i = 0; i < (int)fr; i++) {
-                HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-                HAL_Delay(200);
-                HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_RESET);
-                HAL_Delay(200);
-            }
-        }
-    }
-    else {
-        HAL_GPIO_WritePin(LD_RED_GPIO_Port, LD_RED_Pin, GPIO_PIN_SET);
-    }
-
-    while(1) {
-        HAL_Delay(100);
-    }
   /* USER CODE END 2 */
 
   /* Init scheduler */
