@@ -1,47 +1,69 @@
+/**
+ * @file sd_spi.c
+ *
+ * @brief Implementation of the SD card SPI driver.
+ *
+ * @details See sd_spi.h for the public API documentation. This file
+ * 			contains the low-level SPI transaction primitives and the
+ * 			SD command framing logic, implemented in accordance with the
+ * 			SD Physical Layer Simplified Specification (SPI mode).
+ */
+
 #include "sd_spi.h"
 #include <stdint.h>
 #include <string.h>
-#include "gpio.h"
 #include "cmsis_os.h"
 #include "os_objects.h"
 
-#define SD_TIMEOUT_MS 200
-#define SD_INIT_CLK_TRIES 100
+#define SD_TIMEOUT_MS 200		/**< Response wait timeout, in milliseconds, for command responses (R1) */
+#define SD_INIT_CLK_TRIES 100	/**< Maximum number of CMD0 retries during the initialization. */
 
-#define CMD0 0		// GO_IDLE_STATE
-#define CMD1 1		// SEND_OP_COND
-#define CMD6 6		// SWITCH_FUNC
-#define CMD8 8		// SEND_IF_COND
-#define CMD9 9		// SEND_CSD
-#define CMD12 12	// STOP_TRANSMISSION
-#define CMD13 13	// SEND_STATUS
-#define CMD16 16	// SET_BLOCKLEN
-#define CMD17 17	// READ_SINGLE_BLOCK
-#define CMD24 24	// WRITE_BLOCK
-#define CMD55 55	// APP_CMD
-#define CMD58 58	// READ_OCR
-#define CMD59 59	// CRC_ON_OFF
-#define ACMD41 41	// SD_SEND_OP_COND
+#define CMD0	0	/**< GO_IDLE_STATE - resets the card and selects SPI mode. */
+#define CMD8	8	/**< SEND_IF_COND - queries interface version and voltage range. */
+#define CMD9	9	/**< SEND_CSD - reads the Card-Specific Data register. */
+#define CMD12	12	/**< STOP_TRANSMISSION - terminates a multi-block read. */
+#define CMD16	16	/**< SET_BLOCKLEN - sets the block length. */
+#define CMD17	17	/**< READ_SINGLE_BLOCK - reads one 512-byte block. */
+#define CMD24	24	/**< WRITE_BLOCK - writes one 512-byte block. */
+#define CMD55	55	/**< APP_CMD - signal that the next command is an ACMD. */
+#define CMD58	58	/**< READ_OCR - reads the Operation Conditions Register. */
+#define ACMD41	41	/**< SD_SEND_OP_COND - initiates the card initialization process. */
 
-static SPI_HandleTypeDef *s_hspi;
-static GPIO_TypeDef *s_cs_port;
-static uint16_t s_cs_pin;
-static sdCardType_t s_card_type = SD_TYPE_UNKNOWN;
+static SPI_HandleTypeDef *s_hspi;					/**< SPI peripheral handle used for all transactions. */
+static GPIO_TypeDef *s_cs_port;						/**< GPIO port of the chip-select (CS) pin. */
+static uint16_t s_cs_pin;							/**< GPIO pin number of the chip-select (CS) pin. */
+static sdCardType_t s_card_type = SD_TYPE_UNKNOWN;	/**< Card type detected during SD_Init(). */
 
+/**
+ * @brief Assert the chip-select line (drives CS low, selects the card).
+ */
 static void CS_LOW(void) {
 	HAL_GPIO_WritePin(s_cs_port, s_cs_pin, GPIO_PIN_RESET);
 }
 
+/**
+ * @brief Deasserts the chip-select line (drives CS high, deselects the card).
+ */
 static void CS_HIGH(void) {
 	HAL_GPIO_WritePin(s_cs_port, s_cs_pin, GPIO_PIN_SET);
 }
 
+/**
+ * @brief Exchanges a single byte over SPI (blocking, full-duplex).
+ *
+ * On a HAL transfer error, forces the SPI peripheral state back to
+ * HAL_SPI_STATE_READY to avoid leaving the driver stuck in a busy state
+ * after a failed transaction.
+ *
+ * @param[in] data	Byte to transmit on MOSI.
+ *
+ * @return	Byte simultaneously received on MISO, or 0xFF if the HAL
+ * 			transfer failed.
+ */
 static uint8_t spi_txrx(uint8_t data) {
 	uint8_t rx = 0xFF;
 
-	HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(s_hspi, &data, &rx, 1, HAL_MAX_DELAY);
-
-	if(status != HAL_OK) {
+	if(HAL_SPI_TransmitReceive(s_hspi, &data, &rx, 1, HAL_MAX_DELAY) != HAL_OK) {
 		s_hspi->State = HAL_SPI_STATE_READY;
 		return 0xFF;
 	}
@@ -49,18 +71,49 @@ static uint8_t spi_txrx(uint8_t data) {
 	return rx;
 }
 
+/**
+ * @brief Exchanges a block of data over SPI using DMA.
+ *
+ * Starts a DMA-based full-duplex transfer and blocks the calling RTOS
+ * task on a binary semaphore until the transfer completes (signaled from
+ * HAL_SPI_TxRxCpltCallback()) or the timeout expires. On failure to start
+ * the transfer, or on a semaphore timeout, aborts any in-progress DMA
+ * transfer via HAL_SPI_Abort() to leave the peripheral in a consistent
+ * state for the next call.
+ *
+ * @param[in] tx	Buffer to transmit; must remain valid for the duration
+ * 					of the transfer.
+ * @param[out] rx	Buffer to receive into; must be at least @param len bytes.
+ * @param[in] len	Number of bytes to exchange.
+ *
+ * @return	SD_OK on success, SD_ERROR_READ if the DMA transfer could not
+ * 			be started, SD_ERROR_TIMEOUT if it did not complete in time.
+ *
+ * @note Must be called from an RTOS task context, not from ISR.
+ */
 static sdStatus_t spi_block_txrx_dma(const uint8_t *tx, uint8_t *rx, uint16_t len) {
 	if(HAL_SPI_TransmitReceive_DMA(s_hspi, (uint8_t*)tx, rx, len) != HAL_OK) {
+		HAL_SPI_Abort(s_hspi);
 		return SD_ERROR_READ;
 	}
 
 	if(osSemaphoreAcquire(s_spi_dma_sem, pdMS_TO_TICKS(200)) != osOK) {
+		HAL_SPI_Abort(s_hspi);
 		return SD_ERROR_TIMEOUT;
 	}
 
 	return SD_OK;
 }
 
+/**
+ * @brief Generates clock pulses without conveying meaningful data.
+ *
+ * Send @param n bytes of 0xFF, used to satisfy the SD specification's
+ * requirements for idle clock cycles (e.g. the 74-cycle power-up sequence,
+ * or the mandatory spacing around a command frame).
+ *
+ * @param[in] n	Number of dummy bytes (8 clock cycles each) to send.
+ */
 static void spi_clk_bytes(uint8_t n) {
 	uint8_t dummy = 0xFF;
 	uint8_t rx;
@@ -70,6 +123,12 @@ static void spi_clk_bytes(uint8_t n) {
 	}
 }
 
+/**
+ * @brief Polls the card until it returns a byte other than 0xFF (R1 token).
+ *
+ * @return	The received R1 response byte, or 0xFF if SD_TIMEOUT_MS elapses
+ * 			without a response.
+ */
 static uint8_t sd_wait_response(void) {
 	uint32_t start = HAL_GetTick();
 	uint8_t r = 0xFF;
@@ -84,6 +143,16 @@ static uint8_t sd_wait_response(void) {
 	return 0xFF; // timeout
 }
 
+/**
+ * @brief Waits until the cart deasserts its internal busy signal.
+ *
+ * After a block write, the card holds MISO low while programming its
+ * internal flash memory. Polls until MISO returns to 0xFF or the
+ * 500 ms timeout expires.
+ *
+ * @return	SD_OK once the card is no longer busy, SD_ERROR_TIMEOUT on
+ * 			timeout.
+ */
 static sdStatus_t sd_wait_no_busy(void) {
 	uint32_t start = HAL_GetTick();
 
@@ -96,6 +165,23 @@ static sdStatus_t sd_wait_no_busy(void) {
 	return SD_OK;
 }
 
+/**
+ * @brief Builds and transmits a 6-byte SD command frame, then waits for R1.
+ *
+ * Frame layout: [start bit + command] | arg[31:24] | arg[23:16] |
+ * arg[15:8] | arg[7:0] | crc]. Asserts CS for the duration of the
+ * transaction; the caller must call sd_end_cmd() afterwards to
+ * deassert CS.
+ *
+ * @param[in] cmd	Command index (0-63, without the start-bit prefix;
+ * 					the 0x40 start bit is added internally.
+ * @param[in] arg	32-bit command argument.
+ * @param[in] crc	CRC byte. Only meaningful for CMD0 and CMD8 under the
+ * 					default (CR-disabled) SPI mode; ignored by the card
+ * 					for all other commands.
+ *
+ * @return The R1 response byte (0xFF on timeout).
+ */
 static uint8_t sd_send_cmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
 	uint8_t frame[6];
 
@@ -106,8 +192,8 @@ static uint8_t sd_send_cmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
 	frame[4] = arg & 0xFF;
 	frame[5] = crc;
 
-	spi_clk_bytes(1);
 	CS_LOW();
+	spi_clk_bytes(1);
 
 	for(int i = 0; i < 6; i++) {
 		spi_txrx(frame[i]);
@@ -117,6 +203,9 @@ static uint8_t sd_send_cmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
 	return r1;
 }
 
+/**
+ * @brief Terminates an SD command transaction, deasserting CS.
+ */
 static void sd_end_cmd(void) {
 	spi_txrx(0xFF);
 	CS_HIGH();
@@ -197,16 +286,6 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
 		if(r1 != 0x00) {
 			return SD_ERROR_CMD;
 		}
-	}
-
-	if(HAL_SPI_DeInit(s_hspi) != HAL_OK) {
-		return SD_ERROR_CMD;
-	}
-
-	s_hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-
-	if(HAL_SPI_Init(s_hspi) != HAL_OK) {
-		return SD_ERROR_CMD;
 	}
 
 	return SD_OK;
