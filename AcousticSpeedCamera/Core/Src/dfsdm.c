@@ -76,7 +76,7 @@ void MX_DFSDM1_Init(void)
   hdfsdm1_channel1.Init.Awd.FilterOrder = DFSDM_CHANNEL_SINC3_ORDER;
   hdfsdm1_channel1.Init.Awd.Oversampling = 1;
   hdfsdm1_channel1.Init.Offset = 0;
-  hdfsdm1_channel1.Init.RightBitShift = 0x08;
+  hdfsdm1_channel1.Init.RightBitShift = 0x03;
   if (HAL_DFSDM_ChannelInit(&hdfsdm1_channel1) != HAL_OK)
   {
     Error_Handler();

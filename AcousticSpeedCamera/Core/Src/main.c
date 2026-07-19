@@ -49,6 +49,7 @@
 COM_InitTypeDef BspCOMInit;
 
 /* USER CODE BEGIN PV */
+extern osThreadId_t audioTaskHandle;
 
 /* USER CODE END PV */
 
@@ -57,34 +58,31 @@ void SystemClock_Config(void);
 static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
-void init_hanning_window(void);
-void init_a_weighting_table(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void init_hanning_window(void) {
-	for(int i = 0; i < SAMPLES; i++) {
-		hanning_window[i] = 0.5f * (1 - cosf((2 * PI * i) / (SAMPLES - 1)));
-		hanning_window_energy += hanning_window[i] * hanning_window[i];
+void HAL_DFSDM_FilterRegConvHalfCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
+	if(hdfsdm == &hdfsdm1_filter0) {
+		osThreadFlagsSet(audioTaskHandle, 0x01);
 	}
-	char dbg[64];
-	snprintf(dbg, sizeof(dbg), "win_energy: %.2f\r\n", hanning_window_energy);
-	HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
+
+	if(hdfsdm == &hdfsdm1_filter1) {
+		osThreadFlagsSet(audioTaskHandle, 0x01);
+	}
 }
 
-void init_a_weighting_table(void) {
-	for(int i = 1; i < SAMPLES / 2; i++) {
-		float32_t f = i * FS / SAMPLES;
-		float32_t f2 = f * f;
-		float32_t numerator = powf(12194.0f, 2.0f) * f2 * f2;
-		float32_t denominator = (f2 + powf(20.6f, 2.0f)) * sqrtf((f2 + powf(107.7f, 2.0f)) * (f2 + powf(737.9f, 2.0f))) * (f2 + powf(12194.0f, 2.0f));
-		float32_t Ra = numerator / denominator;
-		float32_t Af = 20.0f * log10f(Ra) + 2.0f;
-		a_weighting_table[i] = powf(10.0f, Af / 10.0f);
+void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
+	if(hdfsdm == &hdfsdm1_filter0) {
+		osThreadFlagsSet(audioTaskHandle, 0x02);
+	}
+
+	if(hdfsdm == &hdfsdm1_filter1) {
+		osThreadFlagsSet(audioTaskHandle, 0x02);
 	}
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -122,8 +120,6 @@ int main(void)
   MX_DMA_Init();
   MX_DFSDM1_Init();
   /* USER CODE BEGIN 2 */
-  init_hanning_window();
-  init_a_weighting_table();
 
   /* USER CODE END 2 */
 
