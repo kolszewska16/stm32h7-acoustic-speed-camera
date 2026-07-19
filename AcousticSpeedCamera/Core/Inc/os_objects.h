@@ -10,7 +10,7 @@ extern osSemaphoreId_t s_spi_dma_sem;
 extern QueueHandle_t xLogQueue;
 
 extern osMutexId_t uartMutex;
-extern const osMutexAttr_t uartMutex_attr;
+extern osMutexAttr_t uartMutex_attr;
 
 extern osThreadId_t audioTaskHandle;
 extern osThreadId_t sdLoggerTaskHandle;

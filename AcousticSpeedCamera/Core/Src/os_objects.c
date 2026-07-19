@@ -6,7 +6,7 @@ QueueHandle_t xLogQueue;
 
 osMutexId_t uartMutex;
 
-const osMutexAttr_t uartMutex_attr = {
+osMutexAttr_t uartMutex_attr = {
 	.name = "uartMutex",
 	.attr_bits = osMutexRecursive | osMutexPrioInherit,
 	.cb_mem = NULL,
