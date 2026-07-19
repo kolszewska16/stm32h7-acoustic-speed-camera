@@ -63,7 +63,6 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void vAudioTask(void *argument);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -83,6 +82,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+	uartMutex = osMutexNew(&uartMutex_attr);
+
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -132,136 +133,6 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void HAL_DFSDM_FilterRegConvHalfCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
-	if(hdfsdm == &hdfsdm1_filter0) {
-		osThreadFlagsSet(audioTaskHandle, 0x01);
-	}
-
-	if(hdfsdm == &hdfsdm1_filter1) {
-		osThreadFlagsSet(audioTaskHandle, 0x01);
-	}
-}
-
-void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
-	if(hdfsdm == &hdfsdm1_filter0) {
-		osThreadFlagsSet(audioTaskHandle, 0x02);
-	}
-
-	if(hdfsdm == &hdfsdm1_filter1) {
-		osThreadFlagsSet(audioTaskHandle, 0x02);
-	}
-}
-
-void vAudioTask(void *parameter) {
-	const char *msg = "audio task start\r\n";
-	HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-
-	HAL_StatusTypeDef state_L = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, dmabuff_L, BUFF_SIZE);
-	HAL_StatusTypeDef state_R = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter1, dmabuff_R, BUFF_SIZE);
-
-	if(state_L != HAL_OK || state_R != HAL_OK) {
-		const char *msg = "DFSDM start error\r\n";
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-	}
-
-	arm_rfft_fast_init_f32(&fft_handler, FFT_SIZE);
-
-	while(1) {
-		uint32_t flags = osThreadFlagsWait(0x03, osFlagsWaitAny, osWaitForever);
-		uint32_t part_idx = -1;
-		if(flags & 0x01) {
-			part_idx = 0;
-		}
-		else if(flags & 0x02) {
-			part_idx = 1;
-		}
-
-		uint32_t offset = part_idx * SAMPLES;
-
-		int32_t minL = INT32_MAX;
-		int32_t maxL = INT32_MIN;
-		for(int i = 0; i < SAMPLES; i++) {
-			int32_t v = dmabuff_L[i + offset];
-			if(v < minL) {
-				minL = v;
-			}
-			if(v > maxL) {
-				maxL = v;
-			}
-		}
-		char msg0[128];
-		sprintf(msg0, "min=%ld max=%ld\r\n", minL, maxL);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg0, strlen(msg0), HAL_MAX_DELAY);
-
-		for(int i = 0; i < SAMPLES; i++) {
-			fft_inputL[i] = (float32_t)(dmabuff_L[i + offset] / 131072.0f);
-			fft_inputR[i] = (float32_t)(dmabuff_R[i + offset] / 131072.0f);
-		}
-
-		// removing DC offset
-		float32_t meanL = 0.0f;
-		float32_t meanR = 0.0f;
-		arm_mean_f32(fft_inputL, SAMPLES, &meanL);
-		arm_mean_f32(fft_inputR, SAMPLES, &meanR);
-		for(int i = 0; i < SAMPLES; i++) {
-			fft_inputL[i] -= meanL;
-			fft_inputR[i] -= meanR;
-		}
-
-		char dbg2[64];
-		snprintf(dbg2, sizeof(dbg2), "meanL: %.0f, AC_max: %ld\r\n",
-		         meanL * 2147483648.0f,
-		         maxL - minL);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg2, strlen(dbg2), HAL_MAX_DELAY);
-
-		// windowing
-		arm_mult_f32(fft_inputL, hanning_window, fft_inputL, SAMPLES);
-		arm_mult_f32(fft_inputR, hanning_window, fft_inputR, SAMPLES);
-
-		// FFT
-		arm_rfft_fast_f32(&fft_handler, fft_inputL, fft_outputL, 0);
-		arm_rfft_fast_f32(&fft_handler, fft_inputR, fft_outputR, 0);
-
-		// magnitude & dBA
-		arm_cmplx_mag_f32(fft_outputL, fft_magnitudesL, SAMPLES / 2);
-		arm_cmplx_mag_f32(fft_outputR, fft_magnitudesR, SAMPLES / 2);
-
-		char dbg3[128];
-		snprintf(dbg3, sizeof(dbg3), "mag1=%.2e mag2=%.2e aw1=%.2e aw2=%.2e\r\n",
-		         fft_magnitudesL[1], fft_magnitudesL[2],
-		         a_weighting_table[1], a_weighting_table[2]);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg3, strlen(dbg3), HAL_MAX_DELAY);
-
-		for(int i = 0; i < SAMPLES / 2; i++) {
-			fft_magnitudesL[i] /= SAMPLES;
-			fft_magnitudesR[i] /= SAMPLES;
-		}
-
-		float32_t total_powerL = 0.0f;
-		float32_t total_powerR = 0.0f;
-		for(int i = 1; i < SAMPLES / 2; i++) {
-			total_powerL += fft_magnitudesL[i] * fft_magnitudesL[i] * a_weighting_table[i];
-			total_powerR += fft_magnitudesR[i] * fft_magnitudesR[i] * a_weighting_table[i];
-		}
-
-		total_powerL /= hanning_window_energy;
-		total_powerR /= hanning_window_energy;
-
-		float32_t dBA_L = 0.0f;
-		float32_t dBA_R = 0.0f;
-		dBA_L = 10.0f * log10f(total_powerL + 1e-30f) + 120.0f;
-		dBA_R = 10.0f * log10f(total_powerR + 1e-30f) + MIC_DBFS_TO_DBSPL;
-
-		char dbg[128];
-		snprintf(dbg, sizeof(dbg), "powerL: %.2e, dBA_L: %.2f\r\n", total_powerL, dBA_L);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)dbg, strlen(dbg), HAL_MAX_DELAY);
-
-		char msg[1024];
-		sprintf(msg, "dBA L: %.2f, dBA R: %.2f\r\n", dBA_L, dBA_R);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), 10);
-	}
-	vTaskDelete(NULL);
-}
 
 /* USER CODE END Application */
 
