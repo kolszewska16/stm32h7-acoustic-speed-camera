@@ -10,8 +10,16 @@ osMutexAttr_t uartMutex_attr = {
 };
 
 osThreadId_t audioTaskHandle = NULL;
+osThreadId_t cameraTaskHandle = NULL;
+
 const osThreadAttr_t audioTask_attr = {
 	.name = "audioTask",
 	.stack_size = 10 * 1024,
 	.priority = (osPriority_t) osPriorityHigh,
+};
+
+const osThreadAttr_t cameraTask_attr = {
+	.name = "cameraTask",
+	.stack_size = 4 * 1024,
+	.priority = (osPriority_t) osPriorityNormal,
 };
