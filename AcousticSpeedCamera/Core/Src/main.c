@@ -22,11 +22,13 @@
 #include "dfsdm.h"
 #include "dma.h"
 #include "i2c.h"
+#include "spi.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "audio_processor.h"
+#include "arducam_ov2640.h"
 
 /* USER CODE END Includes */
 
@@ -121,6 +123,7 @@ int main(void)
   MX_DMA_Init();
   MX_DFSDM1_Init();
   MX_I2C1_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
