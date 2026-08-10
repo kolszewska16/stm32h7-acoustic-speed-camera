@@ -21,6 +21,7 @@
 #include "cmsis_os.h"
 #include "dfsdm.h"
 #include "dma.h"
+#include "spi.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -119,6 +120,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_DFSDM1_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
