@@ -25,22 +25,23 @@ HAL_StatusTypeDef ArduCam_SPI_write_reg(const ArduCam_HandleTypedef *cam, const 
         return HAL_ERROR;
     }
 
-    uint8_t tx[1] = {0};
-    tx[0] = (uint8_t)(reg | 0x80);
+    uint8_t tx = reg | 0x80;
 
     ArduCam_CS_LOW(cam);
-    if(HAL_SPI_Transmit(cam->hspi, (uint8_t*)tx, sizeof(tx), HAL_MAX_DELAY) != HAL_OK) {
+    if(HAL_SPI_Transmit(cam->hspi, &tx, 1, HAL_MAX_DELAY) != HAL_OK) {
     	ArduCam_CS_HIGH(cam);
     	return HAL_ERROR;
     }
 
-    tx[1] = val;
-    if(HAL_SPI_Transmit(cam->hspi, (uint8_t*)tx, sizeof(tx), HAL_MAX_DELAY) != HAL_OK) {
+    tx = val;
+    if(HAL_SPI_Transmit(cam->hspi, &tx, 1, HAL_MAX_DELAY) != HAL_OK) {
     	ArduCam_CS_HIGH(cam);
     	return HAL_ERROR;
     }
 
+    while(HAL_SPI_GetState(cam->hspi) == HAL_SPI_STATE_BUSY);
     ArduCam_CS_HIGH(cam);
+
     return HAL_OK;
 }
 
@@ -49,24 +50,23 @@ HAL_StatusTypeDef ArduCam_SPI_read_reg(const ArduCam_HandleTypedef *cam, const u
         return HAL_ERROR;
     }
 
-    uint8_t tx[1] = {0x00};
-    uint8_t rx[1] = {0x00};
-    tx[0] = (uint8_t)(reg & 0x7F);
+    uint8_t tx = reg & 0x7F;
+    uint8_t empty = 0x00;
+    uint8_t rx = 0x00;
 
     ArduCam_CS_LOW(cam);
-    if(HAL_SPI_Transmit(cam->hspi, (uint8_t*)tx, sizeof(tx), HAL_MAX_DELAY) != HAL_OK) {
+    if(HAL_SPI_TransmitReceive(cam->hspi, &tx, &rx, 1, HAL_MAX_DELAY) != HAL_OK) {
     	ArduCam_CS_HIGH(cam);
     	return HAL_ERROR;
     }
 
-    tx[0] = 0x00;
-    if(HAL_SPI_TransmitReceive(cam->hspi, (uint8_t*)tx, (uint8_t*)rx, sizeof(tx), HAL_MAX_DELAY) != HAL_OK) {
+    if(HAL_SPI_TransmitReceive(cam->hspi, &empty, &rx, 1, HAL_MAX_DELAY) != HAL_OK) {
     	ArduCam_CS_HIGH(cam);
     	return HAL_ERROR;
     }
-
     ArduCam_CS_HIGH(cam);
-    *val = rx[0];
+
+    *val = rx;
     return HAL_OK;
 }
 

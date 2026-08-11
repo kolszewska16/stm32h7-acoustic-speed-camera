@@ -7,9 +7,9 @@
 
 ArduCam_HandleTypedef cam = {
 	.hi2c = &hi2c1,
-	.hspi = &hspi1,
-	.cs_port = CAMERA_CS_GPIO_Port,
-	.cs_pin = CAMERA_CS_Pin,
+	.hspi = &hspi5,
+	.cs_port = CAM_CS_GPIO_Port,
+	.cs_pin = CAM_CS_Pin,
 };
 
 void vCameraTask(void *parameter) {

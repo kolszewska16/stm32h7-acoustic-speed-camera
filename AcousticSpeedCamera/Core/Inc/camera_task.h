@@ -4,7 +4,7 @@
 #include "main.h"
 
 extern I2C_HandleTypeDef hi2c1;
-extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi5;
 
 void vCameraTask(void *parameter);
 
