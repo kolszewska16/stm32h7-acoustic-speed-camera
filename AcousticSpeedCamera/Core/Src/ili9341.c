@@ -30,14 +30,15 @@ HAL_StatusTypeDef ILI9341_WriteData(ILI9341_HandleTypeDef *lcd, uint8_t data) {
     return HAL_OK;
 }
 
-HAL_StatusTypeDef ILI9341_SendData(ILI9341_HandleTypeDef *lcd, uint16_t *data, uint32_t size) {
-    if(lcd == NULL || data == NULL || size <= 0) {
+HAL_StatusTypeDef ILI9341_SendData(ILI9341_HandleTypeDef *lcd, uint16_t data) {
+    if(lcd == NULL) {
         return HAL_ERROR;
     }
 
     HAL_GPIO_WritePin(lcd->dc_port, lcd->dc_pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(lcd->cs_port, lcd->cs_pin, GPIO_PIN_RESET);
-    if(HAL_SPI_Transmit(lcd->hspi, (uint8_t*)data, size * 2, HAL_MAX_DELAY) != HAL_OK) {
+    uint8_t rx[2] = {data >> 8, data & 0xFF};
+    if(HAL_SPI_Transmit(lcd->hspi, rx, 2, HAL_MAX_DELAY) != HAL_OK) {
         return LCD_ERROR_SEND_DATA;
     }
     HAL_GPIO_WritePin(lcd->cs_port, lcd->cs_pin, GPIO_PIN_SET);
@@ -152,4 +153,14 @@ lcdStatus_t ILI9341_Test(ILI9341_HandleTypeDef *lcd, uint16_t color) {
     HAL_GPIO_WritePin(lcd->cs_port, lcd->cs_pin, GPIO_PIN_SET);
 
     return LCD_OK;
+}
+
+lcdStatus_t ILI9341_DrawPixel(ILI9341_HandleTypeDef *lcd, uint16_t x, uint16_t y, uint16_t color) {
+	if(lcd == NULL || x < 0 || y < 0) {
+		return LCD_ERROR;
+	}
+
+	ILI9341_SetWindow(lcd, x, y, x, y);
+	ILI9341_SendData(lcd, color);
+	return LCD_OK;
 }

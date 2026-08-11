@@ -40,10 +40,11 @@ typedef enum {
 
 HAL_StatusTypeDef ILI9341_WriteCommand(ILI9341_HandleTypeDef *lcd, uint8_t cmd);
 HAL_StatusTypeDef ILI9341_WriteData(ILI9341_HandleTypeDef *lcd, uint8_t data);
-HAL_StatusTypeDef ILI9341_SendData(ILI9341_HandleTypeDef *lcd, uint16_t *data, uint32_t size);
+HAL_StatusTypeDef ILI9341_SendData(ILI9341_HandleTypeDef *lcd, uint16_t data);
 
 lcdStatus_t ILI9341_Init(ILI9341_HandleTypeDef *lcd);
 lcdStatus_t ILI9341_SetWindow(ILI9341_HandleTypeDef *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 lcdStatus_t ILI9341_Test(ILI9341_HandleTypeDef *lcd, uint16_t color);
 
+lcdStatus_t ILI9341_DrawPixel(ILI9341_HandleTypeDef *lcd, uint16_t x, uint16_t y, uint16_t color);
 #endif /* INC_ILI9341_H_ */
