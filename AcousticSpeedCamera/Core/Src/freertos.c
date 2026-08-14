@@ -84,6 +84,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
 	uartMutex = osMutexNew(&uartMutex_attr);
+	lvglMutex = osMutexNew(&lvglMutex_attr);
 
   /* USER CODE END RTOS_MUTEX */
 

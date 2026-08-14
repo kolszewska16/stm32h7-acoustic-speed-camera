@@ -1,9 +1,17 @@
 #include "os_objects.h"
 
-osMutexId_t uartMutex;
+osMutexId_t uartMutex = NULL;
+osMutexId_t lvglMutex = NULL;
 
 osMutexAttr_t uartMutex_attr = {
 	.name = "uartMutex",
+	.attr_bits = osMutexRecursive | osMutexPrioInherit,
+	.cb_mem = NULL,
+	.cb_size = 0U,
+};
+
+osMutexAttr_t lvglMutex_attr = {
+	.name = "lvglMutex",
 	.attr_bits = osMutexRecursive | osMutexPrioInherit,
 	.cb_mem = NULL,
 	.cb_size = 0U,

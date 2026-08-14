@@ -6,7 +6,10 @@
 #include "semphr.h"
 
 extern osMutexId_t uartMutex;
+extern osMutexId_t lvglMutex;
+
 extern osMutexAttr_t uartMutex_attr;
+extern osMutexAttr_t lvglMutex_attr;
 
 extern osThreadId_t audioTaskHandle;
 extern osThreadId_t displayTaskHandle;

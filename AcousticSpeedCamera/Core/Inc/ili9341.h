@@ -46,5 +46,4 @@ lcdStatus_t ILI9341_Init(ILI9341_HandleTypeDef *lcd);
 lcdStatus_t ILI9341_SetWindow(ILI9341_HandleTypeDef *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 lcdStatus_t ILI9341_Test(ILI9341_HandleTypeDef *lcd, uint16_t color);
 
-lcdStatus_t ILI9341_DrawPixel(ILI9341_HandleTypeDef *lcd, uint16_t x, uint16_t y, uint16_t color);
 #endif /* INC_ILI9341_H_ */

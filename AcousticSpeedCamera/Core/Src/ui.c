@@ -1,0 +1,129 @@
+#include "ui.h"
+#include <stdint.h>
+
+static lv_obj_t *value_label;
+static lv_obj_t *status_label;
+static lv_obj_t *max_val_label;
+static lv_obj_t *norm_status_label;
+
+void flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px_map) {
+	if(display == NULL || area == NULL || px_map == NULL) {
+		return;
+	}
+
+	// TODO
+	// optimize flush_cb function by using DMA
+
+	ILI9341_SetWindow(&lcd, area->x1, area->y1, area->x2, area->y2);
+	uint16_t *buf16 = (uint16_t*)px_map;
+	int32_t x, y;
+	for(y = area->y1; y <= area->y2; y++) {
+		for(x = area->x1; x <= area->x2; x++) {
+			ILI9341_SendData(&lcd, *buf16);
+			buf16++;
+		}
+	}
+
+	lv_display_flush_ready(display);
+}
+
+void display_init(ILI9341_HandleTypeDef *lcd) {
+	if(lcd == NULL) {
+		return;
+	}
+
+	lv_init();
+	HAL_GPIO_WritePin(lcd->bl_port, lcd->bl_pin, GPIO_PIN_SET);
+	ILI9341_Init(lcd);
+
+	lv_tick_set_cb(HAL_GetTick);
+	lv_display_t *display1 = lv_display_create(HORIZONTAL_RESOLUTION, VERICAL_RESOLUTION);
+
+	static uint8_t buf1[HORIZONTAL_RESOLUTION * VERICAL_RESOLUTION / 10 * BYTES_PER_PIXEL];
+	lv_display_set_buffers(display1, buf1, NULL, sizeof(buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
+	lv_display_set_flush_cb(display1, flush_cb);
+}
+
+void measurement_screen_init(void) {
+	lv_obj_t *scr = lv_screen_active();
+	lv_obj_set_style_bg_color(scr, lv_color_hex(0x0D0D0D), LV_PART_MAIN);
+	lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
+
+	lv_obj_t *title_label = lv_label_create(scr);
+	lv_label_set_text(title_label, "TRAFFIC NOISE MONITOR");
+	lv_obj_set_style_text_color(title_label, lv_color_hex(0x7F8C8D), LV_PART_MAIN);
+	lv_obj_set_style_text_font(title_label, &lv_font_montserrat_14, LV_PART_MAIN);
+	lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 15);
+
+	norm_status_label = lv_label_create(scr);
+	lv_label_set_text(norm_status_label, "NORM");
+	lv_obj_set_style_text_color(norm_status_label, lv_color_hex(0x2ECC71), LV_PART_MAIN);
+	lv_obj_set_style_text_font(norm_status_label, &lv_font_montserrat_14, LV_PART_MAIN);
+	lv_obj_align(norm_status_label, LV_ALIGN_TOP_LEFT, 15, 45);
+
+	max_val_label = lv_label_create(scr);
+	lv_label_set_text(max_val_label, "MAX: -- dBA");
+	lv_obj_set_style_text_color(max_val_label, lv_color_hex(0x95A5A6), LV_PART_MAIN);
+	lv_obj_set_style_text_font(max_val_label, &lv_font_montserrat_14, LV_PART_MAIN);
+	lv_obj_align(max_val_label, LV_ALIGN_TOP_RIGHT, -15, 45);
+
+	value_label = lv_label_create(scr);
+	lv_label_set_text(value_label, "---");
+	lv_obj_set_style_text_color(value_label, lv_color_hex(0xECF0F1), LV_PART_MAIN);
+	lv_obj_set_style_text_font(value_label, &lv_font_montserrat_40, LV_PART_MAIN);
+	lv_obj_align(value_label, LV_ALIGN_CENTER, -15, 0);
+
+	lv_obj_t *unit_label = lv_label_create(scr);
+	lv_label_set_text(unit_label, "dBA");
+	lv_obj_set_style_text_color(unit_label, lv_color_hex(0x00D2D3), LV_PART_MAIN);
+	lv_obj_set_style_text_font(unit_label, &lv_font_montserrat_20, LV_PART_MAIN);
+	lv_obj_align_to(unit_label, value_label, LV_ALIGN_OUT_RIGHT_BOTTOM, 5, -5);
+
+	lv_obj_t *status_bar = lv_obj_create(scr);
+	lv_obj_set_size(status_bar, 320, 30);
+	lv_obj_set_style_bg_color(status_bar, lv_color_hex(0x1A1A1A), 0);
+	lv_obj_set_style_border_color(status_bar, lv_color_hex(0x333333), 0);
+	lv_obj_set_style_border_width(status_bar, 1, 0);
+	lv_obj_set_style_pad_all(status_bar, 0, 0);
+	lv_obj_set_scrollbar_mode(status_bar, LV_SCROLLBAR_MODE_OFF);
+	lv_obj_align(status_bar, LV_ALIGN_BOTTOM_MID, 0, 0);
+
+	status_label = lv_label_create(status_bar);
+	lv_label_set_text(status_label, "[INFO] system ready to use");
+	lv_obj_set_style_text_color(status_label, lv_color_hex(0xB2BEC3), LV_PART_MAIN);
+	lv_obj_set_width(status_label, 240);
+	lv_label_set_long_mode(status_label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+	lv_obj_set_style_text_font(status_label, &lv_font_montserrat_14, LV_PART_MAIN);
+	lv_obj_align(status_label, LV_ALIGN_LEFT_MID, 10, 0);
+}
+
+void update_measurement_value(float32_t value) {
+	char buf[64];
+	lv_snprintf(buf, sizeof(buf), "%.1f", value);
+	lv_label_set_text(value_label, buf);
+}
+
+void update_status_bar(const char *msg) {
+	if(msg == NULL) {
+		return;
+	}
+
+	lv_label_set_text(status_label, msg);
+}
+
+void update_max_val_label(float32_t value) {
+	char buf[32];
+	lv_snprintf(buf, sizeof(buf), "MAX: %.1f dB", value);
+	lv_label_set_text(max_val_label, buf);
+}
+
+void update_norm_status_label(float32_t value) {
+	if(value > 70.0f) {
+		lv_label_set_text(norm_status_label, "ALARM");
+		lv_obj_set_style_text_color(norm_status_label, lv_color_hex(0xE74C3C), LV_PART_MAIN);
+	}
+	else {
+		lv_label_set_text(norm_status_label, "NORM");
+		lv_obj_set_style_text_color(norm_status_label, lv_color_hex(0x2ECC71), LV_PART_MAIN);
+	}
+}

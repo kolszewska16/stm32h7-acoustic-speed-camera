@@ -154,13 +154,3 @@ lcdStatus_t ILI9341_Test(ILI9341_HandleTypeDef *lcd, uint16_t color) {
 
     return LCD_OK;
 }
-
-lcdStatus_t ILI9341_DrawPixel(ILI9341_HandleTypeDef *lcd, uint16_t x, uint16_t y, uint16_t color) {
-	if(lcd == NULL || x < 0 || y < 0) {
-		return LCD_ERROR;
-	}
-
-	ILI9341_SetWindow(lcd, x, y, x, y);
-	ILI9341_SendData(lcd, color);
-	return LCD_OK;
-}
