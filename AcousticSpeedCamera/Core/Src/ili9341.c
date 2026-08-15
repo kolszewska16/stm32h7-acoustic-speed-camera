@@ -1,4 +1,26 @@
+/**
+ * @file ili9341.c
+ *
+ * @brief Implementation of the ILI9341 TFT LCD driver.
+ *
+ * @details See ili9341.h for the public API documentation. This file
+ * 			contains the low-level SPI command/data transaction primitives
+ * 			and the panel initialization and addressing logic, implemented
+ * 			in accordance with the ILI9341 datasheet's command set and
+ * 			power-on sequence.
+ */
+
 #include "ili9341.h"
+
+#define ILI9341_CMD_SOFTWARE_RESET		0x01	/**< Software reset command. */
+#define ILI9341_CMD_SLEEP_OUT			0x11	/**< Sleep out (exit sleep mode) command. */
+#define ILI9341_CMD_DISPLAY_OFF			0x28	/**< Display off command. */
+#define ILI9341_CMD_DISPLAY_ON			0x29	/**< Display on command. */
+#define ILI9341_CMD_COLUMN_ADDR_SET		0x2A	/**< Column address set (CASET) command. */
+#define ILI9341_CMD_PAGE_ADDR_SET		0x2B	/**< Page address set (PASET) command. */
+#define ILI9341_CMD_MEMORY_WRITE		0x2C	/**< Memory write (RAMWR) command. */
+#define ILI9341_CMD_MEMORY_ACCESS_CTRL	0x36	/**< Memory access control (MADCTL) command - scan direction/orientation. */
+#define ILI9341_CMD_PIXEL_FORMAT_SET	0x3A	/**< Pixel format set (COLMOD) command. */
 
 HAL_StatusTypeDef ILI9341_WriteCommand(ILI9341_HandleTypeDef *lcd, uint8_t cmd) {
     if(lcd == NULL) {
@@ -39,7 +61,7 @@ HAL_StatusTypeDef ILI9341_SendData(ILI9341_HandleTypeDef *lcd, uint16_t data) {
     HAL_GPIO_WritePin(lcd->cs_port, lcd->cs_pin, GPIO_PIN_RESET);
     uint8_t rx[2] = {data >> 8, data & 0xFF};
     if(HAL_SPI_Transmit(lcd->hspi, rx, 2, HAL_MAX_DELAY) != HAL_OK) {
-        return LCD_ERROR_SEND_DATA;
+        return HAL_ERROR;
     }
     HAL_GPIO_WritePin(lcd->cs_port, lcd->cs_pin, GPIO_PIN_SET);
 

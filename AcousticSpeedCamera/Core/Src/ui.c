@@ -1,11 +1,41 @@
+/**
+ * @file ui.c
+ *
+ * @brief LVGL-based user interface for the acoustic speed camera display.
+ *
+ * @details See ui.h for the public API documentation. This file contains
+ * 			the LVGL display driver glue for the ILI9341 panel (flush,
+ * 			callback and buffer setup) and the measurement screen layout
+ * 			and update logic. The panel is driven over SPI using DMA: the
+ * 			flush callback only starts the transfer, and the buffer is
+ * 			released back to LVGL from HAL_SPI_TxCplCallback() in main.c
+ * 			once the transfer completes.
+ */
+
 #include "ui.h"
 #include <stdint.h>
 
+/** @brief Label showing the live dBA reading at the center of the screen. */
 static lv_obj_t *value_label;
+
+/** @brief Label showing the scrolling status message at the bottom of the screen. */
 static lv_obj_t *status_label;
+
+/** @brief Label showing the peak (max) dBA value recorded so far. */
 static lv_obj_t *max_val_label;
+
+/** @brief Label showing the current NORM/ALARM noise status. */
 static lv_obj_t *norm_status_label;
 
+/**
+ * @brief Display currently being flushed via DMA.
+ *
+ * @details Set by flush_cb() just before starting the SPI DMA transfer, and
+ * 			read back by HAL_SPI_TxCpltCallback() (in main.c) to know which
+ * 			LVGL display to notify once the transfers completes. Declared
+ * 			volatile since it is written from the main context and read
+ * 			from an ISR context.
+ */
 volatile lv_display_t *active_disp = NULL;
 
 void flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px_map) {
@@ -56,21 +86,21 @@ void measurement_screen_init(void) {
 	lv_obj_set_style_text_font(title_label, &lv_font_montserrat_14, LV_PART_MAIN);
 	lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 15);
 
-	// top-left: current noise status (NORM / ALARM)
+	// top-left: current noise status (NORM / ALARM), updated in update_norm_status_label()
 	norm_status_label = lv_label_create(scr);
 	lv_label_set_text(norm_status_label, "NORM");
 	lv_obj_set_style_text_color(norm_status_label, lv_color_hex(0x2ECC71), LV_PART_MAIN);
 	lv_obj_set_style_text_font(norm_status_label, &lv_font_montserrat_14, LV_PART_MAIN);
 	lv_obj_align(norm_status_label, LV_ALIGN_TOP_LEFT, 15, 45);
 
-	// top-right: peak dBA value recorded so far
+	// top-right: peak dBA value recorded so far, updated in update_max_val_label()
 	max_val_label = lv_label_create(scr);
 	lv_label_set_text(max_val_label, "MAX: -- dBA");
 	lv_obj_set_style_text_color(max_val_label, lv_color_hex(0x95A5A6), LV_PART_MAIN);
 	lv_obj_set_style_text_font(max_val_label, &lv_font_montserrat_14, LV_PART_MAIN);
 	lv_obj_align(max_val_label, LV_ALIGN_TOP_RIGHT, -15, 45);
 
-	// center: live dBA reading
+	// center: live dBA reading, updated in update_measurement_value()
 	value_label = lv_label_create(scr);
 	lv_label_set_text(value_label, "---");
 	lv_obj_set_style_text_color(value_label, lv_color_hex(0xECF0F1), LV_PART_MAIN);
@@ -84,7 +114,7 @@ void measurement_screen_init(void) {
 	lv_obj_set_style_text_font(unit_label, &lv_font_montserrat_20, LV_PART_MAIN);
 	lv_obj_align_to(unit_label, value_label, LV_ALIGN_OUT_RIGHT_BOTTOM, 5, -5);
 
-	// bottom status bar containter
+	// bottom status bar container
 	lv_obj_t *status_bar = lv_obj_create(scr);
 	lv_obj_set_size(status_bar, 320, 30);
 	lv_obj_set_style_bg_color(status_bar, lv_color_hex(0x1A1A1A), 0);
@@ -94,7 +124,7 @@ void measurement_screen_init(void) {
 	lv_obj_set_scrollbar_mode(status_bar, LV_SCROLLBAR_MODE_OFF);
 	lv_obj_align(status_bar, LV_ALIGN_BOTTOM_MID, 0, 0);
 
-	// scrolling status text inside the status bar
+	// scrolling status text inside the status bar, updated in update_status_bar()
 	status_label = lv_label_create(status_bar);
 	lv_label_set_text(status_label, "[INFO] system ready to use");
 	lv_obj_set_style_text_color(status_label, lv_color_hex(0xB2BEC3), LV_PART_MAIN);
