@@ -2,18 +2,8 @@
 #define INC_ARDUCAM_OV2640_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "main.h"
-
-#define OV2640_I2C_ADDR 0x30
-
-#define ARDUCHIP_TEST_REG 0x00
-#define ARDUCHIP_CPLD_RST 0x07
-
-#define OV2640_BANK_SELECT 0xFF
-#define OV2640_PIDH 0x0A
-#define OV2640_PIDL 0x0B
-#define OV2640_COMMON_CTRL7 0x12
-#define OV2640_COMMON_CTRL10 0x15
 
 typedef struct {
     I2C_HandleTypeDef *hi2c;
@@ -54,5 +44,11 @@ cameraStatus_t ArduCam_I2C_read_chip(const ArduCam_HandleTypedef *cam,
 
 cameraStatus_t ArduCam_Arduchip_Reset(const ArduCam_HandleTypedef *cam);
 cameraStatus_t ArduCam_Init(const ArduCam_HandleTypedef *cam);
+
+cameraStatus_t ArduCam_ClearFifoFlag(const ArduCam_HandleTypedef *cam);
+cameraStatus_t ArduCam_StartCapture(const ArduCam_HandleTypedef *cam);
+bool ArduCam_CaptureDone(const ArduCam_HandleTypedef *cam);
+uint32_t ArduCam_ReadFifoLength(const ArduCam_HandleTypedef *cam);
+cameraStatus_t ArduCam_ReadFifoBurst(const ArduCam_HandleTypedef *cam, uint8_t *buf, uint32_t length);
 
 #endif /* INC_ARDUCAM_OV2640_H_ */

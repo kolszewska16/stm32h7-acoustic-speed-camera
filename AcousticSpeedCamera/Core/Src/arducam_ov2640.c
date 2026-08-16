@@ -4,6 +4,31 @@
 
 #define MAX_I2C_DEVICES 5
 
+#define OV2640_I2C_ADDR 0x30
+
+#define ARDUCHIP_TEST_REG 0x00
+#define ARDUCHIP_CPLD_RST 0x07
+#define ARDUCHIP_FIFO 0x04
+#define ARDUCHIP_TRIG 0x41
+#define ARDUCHIP_VERSION_REG 0x40
+
+#define FIFO_CLEAR_MASK 0x01
+#define FIFO_START_MASK 0x02
+#define FIFO_SIZE1 0x42
+#define FIFO_SIZE2 0x43
+#define FIFO_SIZE3 0x44
+#define BURST_FIFO_READ 0x3C
+#define SINGLE_FIFO_READ 0x3D
+
+#define VSYNC_MASK 0x01
+#define CAP_DONE_MASK 0x08
+
+#define OV2640_BANK_SELECT 0xFF
+#define OV2640_PIDH 0x0A
+#define OV2640_PIDL 0x0B
+#define OV2640_COMMON_CTRL7 0x12
+#define OV2640_COMMON_CTRL10 0x15
+
 void ArduCam_CS_LOW(const ArduCam_HandleTypedef *cam) {
     if(cam == NULL) {
         return;
@@ -258,4 +283,85 @@ cameraStatus_t ArduCam_Init(const ArduCam_HandleTypedef *cam) {
     }
 
     return CAMERA_OK;
+}
+
+cameraStatus_t ArduCam_ClearFifoFlag(const ArduCam_HandleTypedef *cam) {
+	if(cam == NULL) {
+		return CAMERA_ERROR;
+	}
+
+	if(ArduCam_SPI_write_reg(cam, ARDUCHIP_FIFO, FIFO_CLEAR_MASK) != HAL_OK) {
+		return CAMERA_SPI_ERROR;
+	}
+
+	return CAMERA_OK;
+}
+
+cameraStatus_t ArduCam_StartCapture(const ArduCam_HandleTypedef *cam) {
+	if(cam == NULL) {
+		return CAMERA_ERROR;
+	}
+
+	ArduCam_ClearFifoFlag(cam);
+	if(ArduCam_SPI_write_reg(cam, ARDUCHIP_FIFO, FIFO_START_MASK) != HAL_OK) {
+		return CAMERA_SPI_ERROR;
+	}
+
+	return CAMERA_OK;
+}
+
+bool ArduCam_CaptureDone(const ArduCam_HandleTypedef *cam) {
+	if(cam == NULL) {
+		return false;
+	}
+
+	uint8_t status = 0;
+	if(ArduCam_SPI_read_reg(cam, ARDUCHIP_TRIG, &status) != HAL_OK) {
+		return false;
+	}
+
+	return (status & CAP_DONE_MASK) != 0;
+}
+
+uint32_t ArduCam_ReadFifoLength(const ArduCam_HandleTypedef *cam) {
+	if(cam == NULL) {
+		return 0;
+	}
+
+	uint8_t len1 = 0;
+	uint8_t len2 = 0;
+	uint8_t len3 = 0;
+
+	if(ArduCam_SPI_read_reg(cam, FIFO_SIZE1, &len1) != HAL_OK) {
+		return CAMERA_SPI_ERROR;
+	}
+	if(ArduCam_SPI_read_reg(cam, FIFO_SIZE2, &len2) != HAL_OK) {
+		return CAMERA_SPI_ERROR;
+	}
+	if(ArduCam_SPI_read_reg(cam, FIFO_SIZE3, &len3) != HAL_OK) {
+		return CAMERA_SPI_ERROR;
+	}
+
+	return ((uint32_t)len3 << 16) | ((uint32_t)len2 << 8) | len1;
+}
+
+cameraStatus_t ArduCam_ReadFifoBurst(const ArduCam_HandleTypedef *cam, uint8_t *buf, uint32_t length) {
+	if(cam == NULL || buf == NULL || length <= 0) {
+		return CAMERA_ERROR;
+	}
+
+	uint8_t cmd = BURST_FIFO_READ;
+	ArduCam_CS_LOW(cam);
+	if(HAL_SPI_Transmit(cam->hspi, &cmd, 1, HAL_MAX_DELAY) != HAL_OK) {
+		ArduCam_CS_HIGH(cam);
+		return CAMERA_SPI_ERROR;
+	}
+
+	if(HAL_SPI_Receive(cam->hspi, buf, length, HAL_MAX_DELAY) != HAL_OK) {
+		ArduCam_CS_HIGH(cam);
+		return CAMERA_SPI_ERROR;
+	}
+
+	ArduCam_CS_HIGH(cam);
+	return CAMERA_OK;
 }
