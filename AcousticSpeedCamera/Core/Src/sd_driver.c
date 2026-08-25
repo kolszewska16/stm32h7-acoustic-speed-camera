@@ -10,19 +10,33 @@
  */
 
 #include "sd_driver.h"
-#include "sd_spi.h"
 
 static volatile DSTATUS s_stat = STA_NOINIT; /**< Current disk status, as tracked by FatFs (e.g. STA_NOINIT).*/
 
+/**
+ * @brief Card handle for the single SD card volume managed by this driver.
+ *
+ * @details Binds the SD SPI driver do SPI4 and the SD_CS_GPIO pin; passed
+ * 			to every SD_Init()/SD_ReadBlock_DMA()/SD_WriteBlock_DMA() call
+ * 			made from this file. card_type is populated by SD_disk_init()
+ * 			on the first successful initialization.
+ */
+sdCard_HandleTypeDef sd = {
+	.hspi = &hspi4,
+	.cs_port = SD_CS_GPIO_Port,
+	.cs_pin = SD_CS_Pin,
+	.card_type = SD_TYPE_UNKNOWN,
+};
+
 DSTATUS SD_disk_init(BYTE pdrv) {
 	(void)pdrv;
-	sdStatus_t st = SD_Init(&hspi4, SD_CS_GPIO_Port, SD_CS_Pin);
+	sdStatus_t st = SD_Init(&sd);
 
 	if(st == SD_OK) {
-		if(HAL_SPI_DeInit(&hspi4) == HAL_OK) {
-			hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+		if(HAL_SPI_DeInit(sd.hspi) == HAL_OK) {
+			sd.hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
 
-			if(HAL_SPI_Init(&hspi4) == HAL_OK) {
+			if(HAL_SPI_Init(sd.hspi) == HAL_OK) {
 				s_stat &= ~STA_NOINIT;
 			}
 			else {
@@ -52,7 +66,7 @@ DRESULT SD_disk_read(BYTE pdrv, BYTE *buf, DWORD sector, UINT count) {
 	}
 
 	for(UINT i = 0; i < count; i++) {
-		if(SD_ReadBlock_DMA(sector + i, buf + i * 512) != SD_OK) {
+		if(SD_ReadBlock_DMA(&sd, sector + i, buf + i * 512) != SD_OK) {
 			return RES_ERROR;
 		}
 	}
@@ -67,7 +81,7 @@ DRESULT SD_disk_write(BYTE pdrv, const BYTE *buf, DWORD sector, UINT count) {
 	}
 
 	for(UINT i = 0; i < count; i++) {
-		if(SD_WriteBlock_DMA(sector + i, buf + i * 512) != SD_OK) {
+		if(SD_WriteBlock_DMA(&sd, sector + i, buf + i * 512) != SD_OK) {
 			return RES_ERROR;
 		}
 	}

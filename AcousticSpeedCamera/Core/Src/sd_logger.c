@@ -8,7 +8,7 @@
 #include "queue.h"
 #include "ff.h"
 #include "os_objects.h"
-#include "hardware.h"
+#include "sd_spi.h"
 
 #define LOG_FILENAME "log.txt"
 #define LOG_FLUSH_EVERY_N 10

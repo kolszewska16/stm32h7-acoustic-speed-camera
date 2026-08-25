@@ -26,6 +26,7 @@
  */
 typedef enum {
 	SD_OK,				/**< Operation completed successfully. */
+	SD_ERROR,			/**< Generic/invalid-argument error (e.g. NULL handle or buffer). */
 	SD_ERROR_TIMEOUT,	/**< Card did not respond within the expected time window. */
 	SD_ERROR_CMD,		/**< Card returned unexpected/invalid response to a command. */
 	SD_ERROR_NO_CARD,	/**< No card detected, or CMD0 failed to bring the card to idle state. */
@@ -36,9 +37,10 @@ typedef enum {
 /**
  * @brief Detected SD card capacity class.
  *
- * Determines the addressing scheme used by SD_ReadBlock() / SD_WriteBlock():
- * SDSC cards are addressed by byte offset, while SDHC/SDXC cards are
- * addressed directly by block number.
+ * @details Determines the addressing scheme used by
+ * 			SD_ReadBlock()/SD_WriteBlock(): SDSC cards are addressed by
+ * 			byte offset, while SDHC/SDXC cards are addressed directly
+ * 			by block number.
  */
 typedef enum {
 	SD_TYPE_UNKNOWN,	/**< Card type not yet determined (before SD_Init() succeeds). */
@@ -47,20 +49,33 @@ typedef enum {
 } sdCardType_t;
 
 /**
+ * @brief Handle describing a single SD card instance and its SPI binding.
+ *
+ * @details Groups together the SPI peripheral handle, chip-select pin
+ * 			assignment, and the card type detected by SD_Init(), so that
+ * 			the driver supports more than one card/SPI instance without
+ * 			relying on module-level global state.
+ */
+typedef struct {
+	SPI_HandleTypeDef *hspi;	/**< SPI peripheral handle used for all transactions with this card. */
+
+	GPIO_TypeDef *cs_port;		/**< GPIO port of the chip-select (CS) pin. */
+	uint16_t cs_pin;			/**< GPIO pin number of the chip-select (CS) pin. */
+
+	sdCardType_t card_type;		/**< Card type detected during SD_Init(); SD_TYPE_UNKNOWN until then. */
+} sdCard_HandleTypeDef;
+
+/**
  * @brief Initializes an SD card over SPI.
  *
- * Performs the SPI-mode initialization sequence: sends at least 74
- * clock cycles with CS deasserted, then executes CMD0, CMD8, ACMD41
- * (preceded by CMD55) and CMD58 to bring the card out of the idle state and
- * determine its capacity class. For SDSC cards, the block length is
- * additionally fixed to 512 bytes via CMD16.
+ * @details Performs the SPI-mode initialization sequence: sends at
+ * 			least 74 clock cycles with CS deasserted, then executes
+ * 			CMD0, CMD8, ACMD41 (preceded by CMD55) and CMD58 to bring
+ * 			the card out of the idle state and determine its capacity
+ * 			class. For SDSC cards, the block length is additionally
+ * 			fixed to 512 bytes via CMD16.
  *
- * @param[in] hspi		Pointer to an initialized SPI handle. The peripheral
- * 						must already be configured for SPI Mode 3 and clocked
- * 						below 400 kHz; this functions does not modify the
- * 						clock configuration.
- * @param[in] cs_port	GPIO port of the chip-select (CS) pin.
- * @param[in] cs_pin	GPIO pin number of the chip-select (CS) pin.
+ * @param[in, out] sd	Pointer to the SD card handle. Must not be NULL
  *
  * @return	SD_OK on success; SD_ERROR_NO_CARD, SD_ERROR_CMD, or SD_ERROR_TIMEOUT
  * 			on failure, depending on which stage of the sequence failed.
@@ -69,14 +84,15 @@ typedef enum {
  * 		 driver. It is not reentrant and not thread-safe; if called from
  * 		 multiple RTOS tasks, external synchronization is required.
  */
-sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_pin);
+sdStatus_t SD_Init(sdCard_HandleTypeDef *sd);
 
 /**
  * @brief Reads a single 512-byte block from the card.
  *
- * Sends the read command, waits for the data start token (0xFE), then
- * reads the 512-byte payload before returning.
+ * @details Sends the read command, waits for the data start token
+ * 			(0xFE), then reads the 512-byte payload before returning.
  *
+ * @param[in] sd			Pointer to the SD card handle. Must not be NULL.
  * @param[in] block_addr	Block address. Interpreted as a byte offset for
  * 							SDSC cards, or directly as a block number for
  * 							SDHC/SDXC cards (handled internally based on the
@@ -87,16 +103,17 @@ sdStatus_t SD_Init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, uint16_t cs_p
  *
  * @pre SD_Init() must have returned SD_OK prior to calling this function.
  */
-sdStatus_t SD_ReadBlock(uint32_t block_addr, uint8_t *buf);
+sdStatus_t SD_ReadBlock(const sdCard_HandleTypeDef *sd, uint32_t block_addr, uint8_t *buf);
 
 /**
  * @brief Read a single 512-byte block from the card using DMA.
  *
- * Sends the read command, waits for the data start token (0xFE), then
- * transfers the 512-byte payload via DMA (see spi_block_txrx_dma()).
- * The calling task blocks on a semaphore until the DMA transfers
- * completes.
+ * @details Sends the read command, waits for the data start token
+ * 			(0xFE), then transfers the 512-byte payload via DMA
+ * 			(see spi_block_txrx_dma()). The calling task blocks on
+ * 			a semaphore until the DMA transfers completes.
  *
+ * @param[in] sd			Pointer to the SD card handle. Must not be NULL.
  * @param[in] block_addr	Block address. Interpreted as a byte offset for
  * 							SDSC cards, or directly as a block number for
  * 							SDHC/SDXC cards (handled internally based on the
@@ -110,15 +127,17 @@ sdStatus_t SD_ReadBlock(uint32_t block_addr, uint8_t *buf);
  * @note Must be called from an RTOS task context (uses osSemaphoreAcquire
  * 		 internally via spi_txrx_dma()), not from ISR.
  */
-sdStatus_t SD_ReadBlock_DMA(uint32_t block_addr, uint8_t *buf);
+sdStatus_t SD_ReadBlock_DMA(const sdCard_HandleTypeDef *sd, uint32_t block_addr, uint8_t *buf);
 
 /**
  * @brief Writes a single 512-byte block to the card.
  *
- * Sends the write command, the data start token (0xFE), the 512-byte
- * payload, and waits for the card to signal completion of the internal
- * flash programming cycle before returning.
+ * @details Sends the write command, the data start token (0xFE),
+ * 			the 512-byte payload, and waits for the card to signal
+ * 			completion of the internal flash programming cycle
+ * 			before returning.
  *
+ * @param[in] sd			Pointer to the SD card handle. Must not be NULL.
  * @param[in] block_addr	Block address. Interpreted as a byte offset for
  * 							SDSC cards, or directly as a block number for
  * 							SDHC/SDXC cards (handled internally based on the
@@ -129,15 +148,17 @@ sdStatus_t SD_ReadBlock_DMA(uint32_t block_addr, uint8_t *buf);
  *
  * @pre SD_Init() must have returned SD_OK prior to calling this function.
  */
-sdStatus_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buf);
+sdStatus_t SD_WriteBlock(const sdCard_HandleTypeDef *sd, uint32_t block_addr, const uint8_t *buf);
 
 /**
  * @brief Writes a single 512-byte block to the card using DMA.
  *
- * Sends the write command, the data start token (0xFE), the 512-byte
- * payload via DMA, and waits for the card to signal completion of the
- * internal flash programming cycle before returning.
+ * @details Sends the write command, the data start token (0xFE),
+ * 			the 512-byte payload via DMA, and waits for the card to
+ * 			signal completion of the internal flash programming cycle
+ * 			before returning.
  *
+ * @param[in] sd			Pointer to the SD card handle. Must not be NULL.
  * @param[in] block_addr	Block address. Interpreted as a byte offset for
  * 							SDSC cards, or directly as a block number for
  * 							SDHC/SDXC cards (handled internally based on the
@@ -151,15 +172,17 @@ sdStatus_t SD_WriteBlock(uint32_t block_addr, const uint8_t *buf);
  * @note Must be called from an RTOS task context (uses osSemaphoreAcquire
  * 		 internally via spi_txrx_dma()), not from ISR.
  */
-sdStatus_t SD_WriteBlock_DMA(uint32_t block_addr, const uint8_t *buf);
+sdStatus_t SD_WriteBlock_DMA(const sdCard_HandleTypeDef *sd, uint32_t block_addr, const uint8_t *buf);
 
 /**
  * @brief Returns the capacity class of the currently initialized card.
  *
+ * @param[in] sd	Pointer to the SD card handle. Must not be NULL.
+ *
  * @return	The detected sdCardType_t, or SD_TYPE_UNKNOWN if SD_Init() has
  * 			not been called or did not succeed.
  */
-sdCardType_t SD_GetCardType(void);
+sdCardType_t SD_GetCardType(const sdCard_HandleTypeDef *sd);
 
 /**
  * @brief Returns the total capacity of the card in bytes.
