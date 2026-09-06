@@ -9,6 +9,8 @@
 #include "os_objects.h"
 #include "ui.h"
 
+#define UI_UPDATE_INTERVAL_MS 500
+
 arm_rfft_fast_instance_f32 fft_handler;
 
 int32_t dmabuff_L[BUFF_SIZE];
@@ -24,6 +26,8 @@ float32_t fft_outputL[SAMPLES];
 float32_t fft_outputR[SAMPLES];
 float32_t fft_magnitudesL[SAMPLES / 2];
 float32_t fft_magnitudesR[SAMPLES / 2];
+
+uint32_t last_ui_update_tick = 0;
 
 void init_hanning_window(float32_t *buf, float32_t *energy_out) {
 	float32_t energy = 0.0f;
@@ -162,12 +166,16 @@ void vAudioTask(void *parameter) {
 			dBA_max = dBA_avg;
 		}
 
-		lv_lock();
-		update_measurement_value(dBA_avg);
-		update_norm_status_label(dBA_avg);
-		update_max_val_label(dBA_max);
-		update_status_bar("[INFO] measuring...");
-		lv_unlock();
+		uint32_t now = HAL_GetTick();
+		if((now - last_ui_update_tick) >= UI_UPDATE_INTERVAL_MS) {
+			last_ui_update_tick = now;
+			lv_lock();
+			update_measurement_value(dBA_avg);
+			update_norm_status_label(dBA_avg);
+			update_max_val_label(dBA_max);
+			update_status_bar("[INFO] measuring...");
+			lv_unlock();
+		}
 	}
 
 	vTaskDelete(NULL);
