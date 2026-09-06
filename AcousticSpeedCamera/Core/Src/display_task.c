@@ -29,7 +29,11 @@ void vDisplayTask(void *parameter) {
 	}
 
 	display_init(&lcd);
+	lv_lock();
 	measurement_screen_init();
+	lv_refr_now(NULL);
+	ui_ready = true;
+	lv_unlock();
 
 	while(1) {
 		lv_timer_handler();

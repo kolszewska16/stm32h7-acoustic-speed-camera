@@ -7,6 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "os_objects.h"
+#include "ui.h"
 
 arm_rfft_fast_instance_f32 fft_handler;
 
@@ -61,6 +62,10 @@ void vAudioTask(void *parameter) {
 		osMutexRelease(uartMutex);
 	}
 
+	while(!ui_ready) {
+		osDelay(1);
+	}
+
 	HAL_StatusTypeDef state_L = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, dmabuff_L, BUFF_SIZE);
 	HAL_StatusTypeDef state_R = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter1, dmabuff_R, BUFF_SIZE);
 
@@ -72,6 +77,7 @@ void vAudioTask(void *parameter) {
 		}
 	}
 
+	static float32_t dBA_max = -1000.0f;
 	init_hanning_window(hanning_window, &hanning_window_energy);
 	init_a_weighting_table(a_weighting_table);
 
@@ -152,20 +158,16 @@ void vAudioTask(void *parameter) {
 		float32_t power_avg = (total_powerL + total_powerR) / 2.0f;
 		float32_t dBA_avg = 10.0f * log10f(power_avg + 1e-30f) + CALIBRATION_OFFSET;
 
-/*		float32_t dBA_L = 0.0f;
-		float32_t dBA_R = 0.0f;
-		dBA_L = 10.0f * log10f(total_powerL + 1e-30f) + MIC_DBFS_TO_DBSPL;
-		dBA_R = 10.0f * log10f(total_powerR + 1e-30f) + MIC_DBFS_TO_DBSPL;*/
-
-		if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
-/*			char msg[64];
-			snprintf(msg, sizeof(msg), "power: %.2f dbspl: %.2f\r\n", power_avg, dBA_avg);*/
-			char msg[128];
-			snprintf(msg, sizeof(msg), "Power (raw): %.4e | SPL: %.2f dBA\r\n", power_avg, dBA_avg);
-			HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-			osMutexRelease(uartMutex);
+		if(dBA_avg > dBA_max) {
+			dBA_max = dBA_avg;
 		}
 
+		lv_lock();
+		update_measurement_value(dBA_avg);
+		update_norm_status_label(dBA_avg);
+		update_max_val_label(dBA_max);
+		update_status_bar("[INFO] measuring...");
+		lv_unlock();
 	}
 
 	vTaskDelete(NULL);

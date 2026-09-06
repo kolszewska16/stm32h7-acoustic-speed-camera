@@ -1,15 +1,15 @@
 #ifndef INC_OS_OBJECTS_H_
 #define INC_OS_OBJECTS_H_
 
+#include <stdbool.h>
 #include "FreeRTOS.h"
 #include "cmsis_os2.h"
 #include "semphr.h"
 
-extern osMutexId_t uartMutex;
-extern osMutexId_t lvglMutex;
+extern volatile bool ui_ready;
 
+extern osMutexId_t uartMutex;
 extern osMutexAttr_t uartMutex_attr;
-extern osMutexAttr_t lvglMutex_attr;
 
 extern osThreadId_t audioTaskHandle;
 extern osThreadId_t displayTaskHandle;

@@ -105,7 +105,9 @@ void measurement_screen_init(void) {
 	lv_label_set_text(value_label, "---");
 	lv_obj_set_style_text_color(value_label, lv_color_hex(0xECF0F1), LV_PART_MAIN);
 	lv_obj_set_style_text_font(value_label, &lv_font_montserrat_40, LV_PART_MAIN);
-	lv_obj_align(value_label, LV_ALIGN_CENTER, -15, 0);
+	lv_obj_set_width(value_label, 105);
+	lv_obj_set_style_align(value_label, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN);
+	lv_obj_align(value_label, LV_ALIGN_CENTER, -20, 0);
 
 	// unit label
 	lv_obj_t *unit_label = lv_label_create(scr);
@@ -135,8 +137,14 @@ void measurement_screen_init(void) {
 }
 
 void update_measurement_value(float32_t value) {
+	int whole = (int32_t)value;
+	int frac = (int32_t)((value - whole) * 10.0f);
+	if(frac < 0) {
+		frac = -frac;
+	}
+
 	char buf[64];
-	lv_snprintf(buf, sizeof(buf), "%.1f", value);
+	lv_snprintf(buf, sizeof(buf), "%d.%d", (int)whole, (int)frac);
 	lv_label_set_text(value_label, buf);
 }
 
@@ -149,8 +157,14 @@ void update_status_bar(const char *msg) {
 }
 
 void update_max_val_label(float32_t value) {
+	int whole = (int32_t)value;
+	int frac = (int32_t)((value - whole) * 10.0f);
+	if(frac < 0) {
+		frac = -frac;
+	}
+
 	char buf[32];
-	lv_snprintf(buf, sizeof(buf), "MAX: %.1f dB", value);
+	lv_snprintf(buf, sizeof(buf), "MAX: %d.%d dB", (int)whole, (int)frac);
 	lv_label_set_text(max_val_label, buf);
 }
 
