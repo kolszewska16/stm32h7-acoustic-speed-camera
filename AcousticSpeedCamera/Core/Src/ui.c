@@ -14,6 +14,11 @@
 
 #include "ui.h"
 #include <stdint.h>
+#include "cmsis_os2.h"
+
+#define UI_UPDATE_INTERVAL_MS 250
+
+uint32_t last_ui_update_tick = 0;
 
 /** @brief Label showing the live dBA reading at the center of the screen. */
 static lv_obj_t *value_label;
@@ -41,6 +46,10 @@ volatile lv_display_t *active_disp = NULL;
 void flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px_map) {
 	if(display == NULL || area == NULL || px_map == NULL) {
 		return;
+	}
+
+	while(lcd.hspi->State != HAL_SPI_STATE_READY) {
+		osThreadYield();
 	}
 
 	ILI9341_SetWindow(&lcd, area->x1, area->y1, area->x2, area->y2);
@@ -176,5 +185,18 @@ void update_norm_status_label(float32_t value) {
 	else {
 		lv_label_set_text(norm_status_label, "NORM");
 		lv_obj_set_style_text_color(norm_status_label, lv_color_hex(0x2ECC71), LV_PART_MAIN);
+	}
+}
+
+void update_ui(float32_t dBA_avg, float32_t dBA_max) {
+	uint32_t now = HAL_GetTick();
+	if((now - last_ui_update_tick) > UI_UPDATE_INTERVAL_MS) {
+		last_ui_update_tick = now;
+		lv_lock();
+		update_measurement_value(dBA_avg);
+		update_norm_status_label(dBA_avg);
+		update_max_val_label(dBA_max);
+		update_status_bar("[INFO] measuring...");
+		lv_unlock();
 	}
 }

@@ -89,8 +89,6 @@ void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	static volatile uint32_t cnt = 0;
-	cnt++;
 	if(hspi->Instance == SPI3) {
 		HAL_GPIO_WritePin(lcd.cs_port, lcd.cs_pin, GPIO_PIN_SET);
 

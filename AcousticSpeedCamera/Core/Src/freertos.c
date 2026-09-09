@@ -30,7 +30,7 @@
 
 #include "hardware.h"
 #include "os_objects.h"
-#include "audio_processor.h"
+#include "audio_task.h"
 #include "display_task.h"
 
 /* USER CODE END Includes */

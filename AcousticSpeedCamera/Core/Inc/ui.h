@@ -125,4 +125,16 @@ void update_max_val_label(float32_t value);
  */
 void update_norm_status_label(float32_t value);
 
+/**
+ * @brief
+ *
+ * @details
+ *
+ * @param[in] dBA_avg
+ * @param[in] dBA_max
+ *
+ * @return None
+ */
+void update_ui(float32_t dBA_avg, float32_t dBA_max);
+
 #endif /* INC_UI_H_ */

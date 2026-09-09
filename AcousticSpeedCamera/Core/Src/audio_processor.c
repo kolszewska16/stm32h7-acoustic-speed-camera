@@ -1,15 +1,9 @@
 #include "audio_processor.h"
 #include <stdio.h>
 #include <string.h>
-#include "main.h"
 #include "stm32h7xx_nucleo.h"
 #include "dfsdm.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "os_objects.h"
-#include "ui.h"
-
-#define UI_UPDATE_INTERVAL_MS 500
+#include "logger.h"
 
 arm_rfft_fast_instance_f32 fft_handler;
 
@@ -27,7 +21,18 @@ float32_t fft_outputR[SAMPLES];
 float32_t fft_magnitudesL[SAMPLES / 2];
 float32_t fft_magnitudesR[SAMPLES / 2];
 
-uint32_t last_ui_update_tick = 0;
+HAL_StatusTypeDef audio_hardware_start(void) {
+	HAL_StatusTypeDef state_L = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0,
+			dmabuff_L, BUFF_SIZE);
+	HAL_StatusTypeDef state_R = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter1,
+			dmabuff_R, BUFF_SIZE);
+
+	if(state_L != HAL_OK || state_R != HAL_OK) {
+		return HAL_ERROR;
+	}
+
+	return HAL_OK;
+}
 
 void init_hanning_window(float32_t *buf, float32_t *energy_out) {
 	float32_t energy = 0.0f;
@@ -39,144 +44,84 @@ void init_hanning_window(float32_t *buf, float32_t *energy_out) {
 
 	*energy_out = energy;
 
-	if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
-		char msg[64];
-		snprintf(msg, sizeof(msg), "[INFO] window energy: %.2f\r\n", energy);
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-		osMutexRelease(uartMutex);
-	}
+	LOG_INFO("window energy: %.2f", energy);
 }
 
 void init_a_weighting_table(float32_t *buf) {
+	buf[0] = 0.0f;
 	for(int i = 1; i < SAMPLES / 2; i++) {
 		float32_t f = i * FS / SAMPLES;
 		float32_t f2 = f * f;
 		float32_t numerator = powf(12194.0f, 2.0f) * f2 * f2;
-		float32_t denominator = (f2 + powf(20.6f, 2.0f)) * sqrtf((f2 + powf(107.7f, 2.0f)) * (f2 + powf(737.9f, 2.0f))) * (f2 + powf(12194.0f, 2.0f));
+		float32_t denominator = (f2 + powf(20.6f, 2.0f)) * sqrtf((f2 + powf(107.7f, 2.0f)) *
+				(f2 + powf(737.9f, 2.0f))) * (f2 + powf(12194.0f, 2.0f));
 		float32_t Ra = numerator / denominator;
 		float32_t Af = 20.0f * log10f(Ra) + 2.0f;
 		buf[i] = powf(10.0f, Af / 10.0f);
 	}
 }
 
-void vAudioTask(void *parameter) {
-	if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
-		const char *msg = "[INFO] audio task start\r\n";
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-		osMutexRelease(uartMutex);
-	}
-
-	while(!ui_ready) {
-		osDelay(1);
-	}
-
-	HAL_StatusTypeDef state_L = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, dmabuff_L, BUFF_SIZE);
-	HAL_StatusTypeDef state_R = HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter1, dmabuff_R, BUFF_SIZE);
-
-	if(state_L != HAL_OK || state_R != HAL_OK) {
-		if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
-			const char *msg = "[ERROR] DFSDM: initialization failed\r\n";
-			HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-			osMutexRelease(uartMutex);
-		}
-	}
-
-	static float32_t dBA_max = -1000.0f;
+void audio_dsp_init(void) {
 	init_hanning_window(hanning_window, &hanning_window_energy);
 	init_a_weighting_table(a_weighting_table);
-
-	if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
-		const char *msg = "[INFO] initialization completed\r\n";
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-		osMutexRelease(uartMutex);
-	}
-
 	arm_rfft_fast_init_f32(&fft_handler, FFT_SIZE);
+}
 
-	while(1) {
-		uint32_t flags = osThreadFlagsWait(0x03, osFlagsWaitAny, osWaitForever);
-		uint32_t part_idx = -1;
-		if(flags & 0x01) {
-			part_idx = 0;
-		}
-		else if(flags & 0x02) {
-			part_idx = 1;
-		}
-
-		uint32_t offset = part_idx * SAMPLES;
-
-		int32_t minL = INT32_MAX;
-		int32_t maxL = INT32_MIN;
-		for(int i = 0; i < SAMPLES; i++) {
-			int32_t v = dmabuff_L[i + offset];
-			if(v < minL) {
-				minL = v;
-			}
-			if(v > maxL) {
-				maxL = v;
-			}
-		}
-
-		for(int i = 0; i < SAMPLES; i++) {
-			fft_inputL[i] = ((float32_t)(dmabuff_L[i + offset]) / 32768.0f);
-			fft_inputR[i] = ((float32_t)(dmabuff_R[i + offset]) / 32768.0f);
-		}
-
-		// removing DC offset
-		float32_t meanL = 0.0f;
-		float32_t meanR = 0.0f;
-		arm_mean_f32(fft_inputL, SAMPLES, &meanL);
-		arm_mean_f32(fft_inputR, SAMPLES, &meanR);
-		for(int i = 0; i < SAMPLES; i++) {
-			fft_inputL[i] -= meanL;
-			fft_inputR[i] -= meanR;
-		}
-
-		// windowing
-		arm_mult_f32(fft_inputL, hanning_window, fft_inputL, SAMPLES);
-		arm_mult_f32(fft_inputR, hanning_window, fft_inputR, SAMPLES);
-
-		// FFT
-		arm_rfft_fast_f32(&fft_handler, fft_inputL, fft_outputL, 0);
-		arm_rfft_fast_f32(&fft_handler, fft_inputR, fft_outputR, 0);
-
-		// magnitude & dBA
-		arm_cmplx_mag_f32(fft_outputL, fft_magnitudesL, SAMPLES / 2);
-		arm_cmplx_mag_f32(fft_outputR, fft_magnitudesR, SAMPLES / 2);
-
-		for(int i = 0; i < SAMPLES / 2; i++) {
-			fft_magnitudesL[i] /= (float32_t)SAMPLES;
-			fft_magnitudesR[i] /= (float32_t)SAMPLES;
-		}
-
-		float32_t total_powerL = 0.0f;
-		float32_t total_powerR = 0.0f;
-		for(int i = 1; i < SAMPLES / 2; i++) {
-			total_powerL += fft_magnitudesL[i] * fft_magnitudesL[i] * a_weighting_table[i];
-			total_powerR += fft_magnitudesR[i] * fft_magnitudesR[i] * a_weighting_table[i];
-		}
-
-		total_powerL /= hanning_window_energy;
-		total_powerR /= hanning_window_energy;
-
-		float32_t power_avg = (total_powerL + total_powerR) / 2.0f;
-		float32_t dBA_avg = 10.0f * log10f(power_avg + 1e-30f) + CALIBRATION_OFFSET;
-
-		if(dBA_avg > dBA_max) {
-			dBA_max = dBA_avg;
-		}
-
-		uint32_t now = HAL_GetTick();
-		if((now - last_ui_update_tick) >= UI_UPDATE_INTERVAL_MS) {
-			last_ui_update_tick = now;
-			lv_lock();
-			update_measurement_value(dBA_avg);
-			update_norm_status_label(dBA_avg);
-			update_max_val_label(dBA_max);
-			update_status_bar("[INFO] measuring...");
-			lv_unlock();
-		}
+void process_input_buffers(int32_t *bufL, int32_t *bufR, uint32_t offset) {
+	if(bufL == NULL || bufR == NULL) {
+		return;
 	}
 
-	vTaskDelete(NULL);
+	for(int i = 0; i < SAMPLES; i++) {
+		fft_inputL[i] = ((float32_t)(bufL[i + offset]) / 32768.0f);
+		fft_inputR[i] = ((float32_t)(bufR[i + offset]) / 32768.0f);
+	}
+
+	// removing DC offset
+	float32_t meanL = 0.0f;
+	float32_t meanR = 0.0f;
+
+	arm_mean_f32(fft_inputL, SAMPLES, &meanL);
+	arm_mean_f32(fft_inputR, SAMPLES, &meanR);
+
+	for(int i = 0; i < SAMPLES; i++) {
+		fft_inputL[i] -= meanL;
+		fft_inputR[i] -= meanR;
+	}
+}
+
+float32_t calculate_channel_power(float32_t *in, float32_t *out, float32_t *mag) {
+	if(in == NULL || out == NULL || mag == NULL) {
+		return 0;
+	}
+
+	// windowing
+	arm_mult_f32(in, hanning_window, in, SAMPLES);
+
+	// FFT
+	arm_rfft_fast_f32(&fft_handler, in, out, 0);
+
+	// magnitude & dBA
+	arm_cmplx_mag_f32(out, mag, SAMPLES / 2);
+
+	float32_t total_power = 0.0f;
+	for(int i = 0; i < SAMPLES / 2; i++) {
+		mag[i] /= (float32_t)SAMPLES;
+		total_power += mag[i] * mag[i] * a_weighting_table[i];
+	}
+
+	return total_power / hanning_window_energy;
+}
+
+float32_t process_audio_frame(int32_t *bufL, int32_t *bufR, uint32_t offset) {
+	if(bufL == NULL || bufR == NULL) {
+		return 0;
+	}
+
+	process_input_buffers(bufL, bufR, offset);
+	float32_t powerL = calculate_channel_power(fft_inputL, fft_outputL, fft_magnitudesL);
+	float32_t powerR = calculate_channel_power(fft_inputR, fft_outputR, fft_magnitudesR);
+
+	float32_t power_avg = (powerL + powerR) / 2.0f;
+	return 10 * log10f(power_avg + 1e-30f) + CALIBRATION_OFFSET;
 }
