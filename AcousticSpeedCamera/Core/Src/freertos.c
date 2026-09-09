@@ -30,7 +30,8 @@
 
 #include "hardware.h"
 #include "os_objects.h"
-#include "audio_processor.h"
+#include "audio_task.h"
+#include "display_task.h"
 
 /* USER CODE END Includes */
 
@@ -104,6 +105,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  displayTaskHandle = osThreadNew(vDisplayTask, NULL, &displayTask_attr);
   audioTaskHandle = osThreadNew(vAudioTask, NULL, &audioTask_attr);
   /* USER CODE END RTOS_THREADS */
 

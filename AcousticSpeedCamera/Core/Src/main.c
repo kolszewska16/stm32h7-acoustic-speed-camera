@@ -21,11 +21,14 @@
 #include "cmsis_os.h"
 #include "dfsdm.h"
 #include "dma.h"
+#include "spi.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "audio_processor.h"
+#include "ili9341.h"
+#include "lvgl.h"
 
 /* USER CODE END Includes */
 
@@ -49,6 +52,8 @@
 COM_InitTypeDef BspCOMInit;
 
 /* USER CODE BEGIN PV */
+extern ILI9341_HandleTypeDef lcd;
+extern volatile lv_display_t *active_disp;
 extern osThreadId_t audioTaskHandle;
 
 /* USER CODE END PV */
@@ -80,6 +85,16 @@ void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
 
 	if(hdfsdm == &hdfsdm1_filter1) {
 		osThreadFlagsSet(audioTaskHandle, 0x02);
+	}
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if(hspi->Instance == SPI3) {
+		HAL_GPIO_WritePin(lcd.cs_port, lcd.cs_pin, GPIO_PIN_SET);
+
+		if(active_disp != NULL) {
+			lv_display_flush_ready((lv_display_t*)active_disp);
+		}
 	}
 }
 
@@ -119,6 +134,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_DFSDM1_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
