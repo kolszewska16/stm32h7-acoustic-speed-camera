@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dcmi.h"
 #include "dfsdm.h"
 #include "dma.h"
 #include "spi.h"
@@ -135,6 +136,10 @@ int main(void)
   MX_DMA_Init();
   MX_DFSDM1_Init();
   MX_SPI3_Init();
+<<<<<<< Updated upstream
+=======
+  MX_DCMI_Init();
+>>>>>>> Stashed changes
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -228,6 +233,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  __HAL_RCC_PLLCLKOUT_ENABLE(RCC_PLL1_DIVQ);
+  HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_2);
 }
 
 /* USER CODE BEGIN 4 */

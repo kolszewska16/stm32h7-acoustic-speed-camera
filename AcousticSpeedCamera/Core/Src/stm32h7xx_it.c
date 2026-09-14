@@ -55,6 +55,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_dcmi;
 extern DMA_HandleTypeDef hdma_dfsdm1_flt0;
 extern DMA_HandleTypeDef hdma_dfsdm1_flt1;
 extern DFSDM_Filter_HandleTypeDef hdfsdm1_filter0;
@@ -208,6 +209,23 @@ void DMA1_Stream4_IRQHandler(void)
 }
 
 /**
+<<<<<<< Updated upstream
+=======
+  * @brief This function handles DMA1 stream7 global interrupt.
+  */
+void DMA1_Stream7_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream7_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream7_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_dcmi);
+  /* USER CODE BEGIN DMA1_Stream7_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream7_IRQn 1 */
+}
+
+/**
+>>>>>>> Stashed changes
   * @brief This function handles SPI3 global interrupt.
   */
 void SPI3_IRQHandler(void)
