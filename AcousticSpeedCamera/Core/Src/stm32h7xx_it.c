@@ -209,8 +209,6 @@ void DMA1_Stream4_IRQHandler(void)
 }
 
 /**
-<<<<<<< Updated upstream
-=======
   * @brief This function handles DMA1 stream7 global interrupt.
   */
 void DMA1_Stream7_IRQHandler(void)
@@ -225,7 +223,6 @@ void DMA1_Stream7_IRQHandler(void)
 }
 
 /**
->>>>>>> Stashed changes
   * @brief This function handles SPI3 global interrupt.
   */
 void SPI3_IRQHandler(void)

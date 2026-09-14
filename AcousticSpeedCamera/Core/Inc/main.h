@@ -60,30 +60,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-<<<<<<< Updated upstream
-#define LCD_CS_Pin GPIO_PIN_6
-#define LCD_CS_GPIO_Port GPIOC
 #define LCD_DC_Pin GPIO_PIN_8
 #define LCD_DC_GPIO_Port GPIOC
-#define LCD_RST_Pin GPIO_PIN_9
-#define LCD_RST_GPIO_Port GPIOC
-=======
-#define LCD_DC_Pin GPIO_PIN_8
-#define LCD_DC_GPIO_Port GPIOC
->>>>>>> Stashed changes
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
 #define SWCLK_GPIO_Port GPIOA
 #define LCD_BL_Pin GPIO_PIN_11
 #define LCD_BL_GPIO_Port GPIOC
-<<<<<<< Updated upstream
-=======
 #define LCD_CS_Pin GPIO_PIN_2
 #define LCD_CS_GPIO_Port GPIOD
 #define LCD_RST_Pin GPIO_PIN_1
 #define LCD_RST_GPIO_Port GPIOE
->>>>>>> Stashed changes
 
 /* USER CODE BEGIN Private defines */
 

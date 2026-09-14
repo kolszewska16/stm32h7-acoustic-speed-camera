@@ -136,10 +136,7 @@ int main(void)
   MX_DMA_Init();
   MX_DFSDM1_Init();
   MX_SPI3_Init();
-<<<<<<< Updated upstream
-=======
   MX_DCMI_Init();
->>>>>>> Stashed changes
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
