@@ -58,6 +58,7 @@ void DMA1_Stream4_IRQHandler(void);
 void DMA1_Stream7_IRQHandler(void);
 void SPI3_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
+void DCMI_PSSI_IRQHandler(void);
 void DFSDM1_FLT0_IRQHandler(void);
 void DFSDM1_FLT1_IRQHandler(void);
 /* USER CODE BEGIN EFP */

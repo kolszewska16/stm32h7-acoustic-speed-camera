@@ -142,7 +142,7 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     hdma_dcmi.Init.MemInc = DMA_MINC_ENABLE;
     hdma_dcmi.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     hdma_dcmi.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
-    hdma_dcmi.Init.Mode = DMA_CIRCULAR;
+    hdma_dcmi.Init.Mode = DMA_NORMAL;
     hdma_dcmi.Init.Priority = DMA_PRIORITY_LOW;
     hdma_dcmi.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_dcmi) != HAL_OK)
@@ -152,6 +152,9 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
 
     __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_dcmi);
 
+    /* DCMI interrupt Init */
+    HAL_NVIC_SetPriority(DCMI_PSSI_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(DCMI_PSSI_IRQn);
   /* USER CODE BEGIN DCMI_MspInit 1 */
 
   /* USER CODE END DCMI_MspInit 1 */
@@ -196,6 +199,9 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
 
     /* DCMI DMA DeInit */
     HAL_DMA_DeInit(dcmiHandle->DMA_Handle);
+
+    /* DCMI interrupt Deinit */
+    HAL_NVIC_DisableIRQ(DCMI_PSSI_IRQn);
   /* USER CODE BEGIN DCMI_MspDeInit 1 */
 
   /* USER CODE END DCMI_MspDeInit 1 */

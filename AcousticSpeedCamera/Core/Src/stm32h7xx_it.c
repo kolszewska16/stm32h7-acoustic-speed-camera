@@ -56,6 +56,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_dcmi;
+extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_dfsdm1_flt0;
 extern DMA_HandleTypeDef hdma_dfsdm1_flt1;
 extern DFSDM_Filter_HandleTypeDef hdfsdm1_filter0;
@@ -248,6 +249,20 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DCMI and PSSI global interrupt.
+  */
+void DCMI_PSSI_IRQHandler(void)
+{
+  /* USER CODE BEGIN DCMI_PSSI_IRQn 0 */
+
+  /* USER CODE END DCMI_PSSI_IRQn 0 */
+  HAL_DCMI_IRQHandler(&hdcmi);
+  /* USER CODE BEGIN DCMI_PSSI_IRQn 1 */
+
+  /* USER CODE END DCMI_PSSI_IRQn 1 */
 }
 
 /**
