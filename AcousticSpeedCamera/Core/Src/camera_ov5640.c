@@ -3,23 +3,25 @@
 #include "ov5640_dcmi.h"
 
 Camera_StatusTypeDef Camera_Init(Camera_HandleTypeDef *hcam,
+		const OV5640_HandleTypedef *cfg,
 		uint8_t *frame_buf, uint32_t frame_size,
 		uint32_t resolution, uint32_t pixel_format)
 {
-	if(hcam == NULL || frame_buf == NULL || frame_size == 0 ||
-		resolution == 0 || pixel_format == 0)
+	if(hcam == NULL || cfg == NULL || frame_buf == NULL ||
+		frame_size == 0 || resolution == 0 || pixel_format == 0)
 	{
 		return CAMERA_ERROR;
 	}
 
 	uint32_t id = 0;
 
+	hcam->cam = *cfg;
 	hcam->frame_buf = frame_buf;
 	hcam->frame_size = frame_size;
 	hcam->is_initialized = 0;
 
 	// I2C and hardware reset
-	if(OV5640_BSP_Init(&hcam->sensor, hcam->cam) != OV5640_OK) {
+	if(OV5640_BSP_Init(&hcam->sensor, &hcam->cam) != OV5640_OK) {
 		return CAMERA_ERROR;
 	}
 

@@ -13,8 +13,10 @@ extern osMutexAttr_t uartMutex_attr;
 
 extern osThreadId_t audioTaskHandle;
 extern osThreadId_t displayTaskHandle;
+extern osThreadId_t cameraTaskHandle;
 
 extern const osThreadAttr_t audioTask_attr;
 extern const osThreadAttr_t displayTask_attr;
+extern const osThreadAttr_t cameraTask_attr;
 
 #endif /* INC_OS_OBJECTS_H_ */

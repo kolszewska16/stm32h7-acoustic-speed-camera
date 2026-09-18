@@ -14,13 +14,14 @@ typedef enum {
 
 typedef struct {
 	OV5640_Object_t sensor;
-	OV5640_HandleTypedef *cam;
+	OV5640_HandleTypedef cam;
 	uint8_t *frame_buf;
 	uint32_t frame_size;
 	uint8_t is_initialized;
 } Camera_HandleTypeDef;
 
 Camera_StatusTypeDef Camera_Init(Camera_HandleTypeDef *hcam,
+		const OV5640_HandleTypedef *cfg,
 		uint8_t *frame_buf, uint32_t frame_size,
 		uint32_t resolution, uint32_t pixel_format);
 Camera_StatusTypeDef Camera_CaptureSnapshot(Camera_HandleTypeDef *hcam);
