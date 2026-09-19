@@ -1,0 +1,842 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "c341bf02-9cc6-4779-baff-2a7769fd5b62")
+	(paper "A4")
+	(title_block
+		(rev "1.0")
+		(comment 1 "Kinga Olszewska")
+		(comment 2 "AGH")
+		(comment 3 "WIEiT")
+	)
+	(lib_symbols)
+	(no_connect
+		(at 203.2 91.44)
+		(uuid "2457788e-8a74-43c3-ab2d-f38ea4e2feb4")
+	)
+	(no_connect
+		(at 203.2 99.06)
+		(uuid "862d347c-9357-48cd-94a6-f110b9bd010f")
+	)
+	(no_connect
+		(at 203.2 96.52)
+		(uuid "dd88e3de-116b-4c71-ae55-1505e115874d")
+	)
+	(no_connect
+		(at 203.2 93.98)
+		(uuid "df4785d7-8c67-42e6-8d24-42236b7ff20a")
+	)
+	(wire
+		(pts
+			(xy 101.6 110.49) (xy 127 110.49)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "00adaee5-9e44-4ebe-8400-4171f59d08da")
+	)
+	(wire
+		(pts
+			(xy 156.21 127) (xy 156.21 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0a551b9a-cd0c-4418-9eba-50a7aea141a6")
+	)
+	(wire
+		(pts
+			(xy 166.37 57.15) (xy 166.37 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0c1f3664-2a0a-4557-a41a-a12967f5b8ea")
+	)
+	(wire
+		(pts
+			(xy 166.37 127) (xy 166.37 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "271d0de4-b273-4d6d-94e8-417468988fd9")
+	)
+	(wire
+		(pts
+			(xy 158.75 127) (xy 158.75 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2e94743f-9119-4607-9e9d-a9312a69bc59")
+	)
+	(wire
+		(pts
+			(xy 101.6 115.57) (xy 127 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "58b39b7a-5773-494c-9eaf-2a28e2ee3471")
+	)
+	(wire
+		(pts
+			(xy 101.6 118.11) (xy 127 118.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "79bb07a4-ac42-42f8-b89e-1fd9e280331c")
+	)
+	(wire
+		(pts
+			(xy 171.45 57.15) (xy 171.45 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7bfcc5c4-2c01-4d1f-b0e1-b337b1e9031a")
+	)
+	(wire
+		(pts
+			(xy 177.8 109.22) (xy 203.2 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a757ac7d-16f0-46c2-af14-d21570d70e80")
+	)
+	(wire
+		(pts
+			(xy 168.91 127) (xy 168.91 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c3de8a26-ac1a-411d-a7f7-73b915b4de8e")
+	)
+	(wire
+		(pts
+			(xy 161.29 127) (xy 161.29 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c4defb79-cd14-4248-973a-6c53be6a7ed7")
+	)
+	(wire
+		(pts
+			(xy 101.6 113.03) (xy 127 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cf70b775-ed57-4f66-bdd8-31d6ed301afe")
+	)
+	(wire
+		(pts
+			(xy 177.8 111.76) (xy 203.2 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d0928e45-effe-46a0-b948-3a75208c4555")
+	)
+	(wire
+		(pts
+			(xy 168.91 57.15) (xy 168.91 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d9dab41c-1d7c-4bc1-8e99-a289a67d16a6")
+	)
+	(wire
+		(pts
+			(xy 163.83 127) (xy 163.83 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f94b456c-0e74-402f-9897-5937454bbaca")
+	)
+	(sheet
+		(at 63.5 101.6)
+		(size 38.1 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "8331ca88-1a7e-43b9-a7e2-ad34467fd1ec")
+		(property "Sheetname" "sd_card"
+			(at 63.5 100.8884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sd_card.kicad_sch"
+			(at 63.5 127.5846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "SD_CS" input
+			(at 101.6 110.49 0)
+			(uuid "18f71629-bf13-4a41-9d66-c8e00a26add0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "SD_MISO" input
+			(at 101.6 118.11 0)
+			(uuid "349531c8-88c7-4ade-a081-ee55c0c16d8c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "SD_MOSI" input
+			(at 101.6 115.57 0)
+			(uuid "1ad9ea1f-597d-4214-a4f6-5ff1b55ec001")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "SD_SCK" input
+			(at 101.6 113.03 0)
+			(uuid "8f86963e-92c5-4331-a62f-49c4b125757a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "AcousticSpeedCameraShield"
+				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 203.2 88.9)
+		(size 38.1 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "84229b8c-2ff1-4855-b1ea-076e7480c757")
+		(property "Sheetname" "camera"
+			(at 203.2 88.1884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "camera.kicad_sch"
+			(at 203.2 114.8846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "CAM_CS" input
+			(at 203.2 91.44 180)
+			(uuid "060ef4a9-c5c1-4b29-a466-11086e81e89f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "CAM_MISO" input
+			(at 203.2 99.06 180)
+			(uuid "8b08ad3f-7f6b-49eb-9d7c-823a2f6ce08d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "CAM_MOSI" input
+			(at 203.2 96.52 180)
+			(uuid "ef402125-2d3e-4806-8b52-3fccb578d6f9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "CAM_SCK" input
+			(at 203.2 93.98 180)
+			(uuid "07305bcf-78af-4f38-a564-eae06c69f34b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "CAM_SCL" input
+			(at 203.2 109.22 180)
+			(uuid "f56b31ff-6607-4372-a503-d4fa6af0725d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "CAM_SDA" input
+			(at 203.2 111.76 180)
+			(uuid "c2f6de1f-c54a-4b77-899e-c2cc4cb391b2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "AcousticSpeedCameraShield"
+				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 139.7 31.75)
+		(size 38.1 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "9a35883b-036d-43eb-a120-e80c15c0e5d3")
+		(property "Sheetname" "mics"
+			(at 139.7 31.0384 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mics.kicad_sch"
+			(at 139.7 57.7346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "PDM_CLK" input
+			(at 166.37 57.15 270)
+			(uuid "0144e937-113a-4699-b5f8-82a1c3a8cd85")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "PDM_DAT1" input
+			(at 168.91 57.15 270)
+			(uuid "9eec352b-7813-4a9e-a7c1-c366768ad9b2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "PDM_DAT2" input
+			(at 171.45 57.15 270)
+			(uuid "cef0652d-5294-49e2-a24d-a2110355deeb")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "AcousticSpeedCameraShield"
+				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 127 76.2)
+		(size 50.8 50.8)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "ad166ec6-170d-47ab-ab21-677c1ec2a8aa")
+		(property "Sheetname" "mcu_conn"
+			(at 127 75.4884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mcu_conn.kicad_sch"
+			(at 127 127.5846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "CAM_SCL" input
+			(at 177.8 109.22 0)
+			(uuid "b178d845-8fe2-4940-a942-7bb26eb3a7a8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "CAM_SDA" input
+			(at 177.8 111.76 0)
+			(uuid "50a0f5b8-5fda-4699-910b-589a9eca2a5f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "PDM_CLK" input
+			(at 166.37 76.2 90)
+			(uuid "75a86727-0ca9-4226-bd3f-87cff0b90d98")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "PDM_DAT1" input
+			(at 168.91 76.2 90)
+			(uuid "da645f90-4c26-4340-bd06-f4f3c486d812")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "PDM_DAT2" input
+			(at 171.45 76.2 90)
+			(uuid "32c461a5-5e4a-4f26-9f29-21d6aae1ec6e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "SD_CS" input
+			(at 127 110.49 180)
+			(uuid "ada9781c-a242-4f7d-b564-dc46eafee212")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "SD_MISO" input
+			(at 127 118.11 180)
+			(uuid "77bd8de2-549b-45ea-9d9b-df15369c84a3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "SD_MOSI" input
+			(at 127 115.57 180)
+			(uuid "2e8f99b5-ef97-444d-97d9-f807387fe281")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "SD_SCK" input
+			(at 127 113.03 180)
+			(uuid "0606d59a-ac89-40df-a30b-e89db6eaf3a9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LCD_BL" input
+			(at 163.83 127 270)
+			(uuid "9a70cd7d-27e1-43c4-a768-311c21e82a92")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LCD_CS" input
+			(at 156.21 127 270)
+			(uuid "a090d350-ed34-4aaf-9bc5-338eae7cabd3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LCD_DC" input
+			(at 168.91 127 270)
+			(uuid "8e2ed7d5-701e-4c15-ab49-2e69308f73a2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LCD_DIN" input
+			(at 161.29 127 270)
+			(uuid "43f754cf-9ddd-4cf8-974e-b94c43d0db02")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LCD_RST" input
+			(at 166.37 127 270)
+			(uuid "53c209bb-d798-4fe5-85af-ebe8ed269c59")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LCD_CLK" input
+			(at 158.75 127 270)
+			(uuid "bef5a94d-20e0-48ae-b081-3fabd1310fbc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "AcousticSpeedCameraShield"
+				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 63.5 63.5)
+		(size 38.1 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "c2139296-36af-425c-ab0d-261d721c1a12")
+		(property "Sheetname" "power"
+			(at 63.5 62.7884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 63.5 89.4846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "AcousticSpeedCameraShield"
+				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 133.35 146.05)
+		(size 38.1 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "d58a5339-ed5e-4fe3-b0a0-f0baa5a05644")
+		(property "Sheetname" "display"
+			(at 133.35 145.3384 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "display.kicad_sch"
+			(at 133.35 172.0346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "DISP_BL" input
+			(at 163.83 146.05 90)
+			(uuid "b83c767b-aee5-48b4-b605-3e46891cbb91")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "DISP_CLK" input
+			(at 158.75 146.05 90)
+			(uuid "91f83b24-d814-47fe-a02d-7a2a9aa37447")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "DISP_CS" input
+			(at 156.21 146.05 90)
+			(uuid "f4d72660-3697-4c32-8cd9-62d1d63988be")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "DISP_DC" input
+			(at 168.91 146.05 90)
+			(uuid "3857c2e1-0909-4b05-8b2f-3434cdb1b3e2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "DISP_DIN" input
+			(at 161.29 146.05 90)
+			(uuid "c7a2eb5d-8876-4f32-82a0-8122fca4f086")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "DISP_RST" input
+			(at 166.37 146.05 90)
+			(uuid "75395d29-43fa-418a-ac02-6c3d6b6f0768")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "AcousticSpeedCameraShield"
+				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+	(embedded_files
+		(file
+			(name "bachelors_degree_temp.kicad_wks")
+			(type worksheet)
+			(data |KLUv/WA+ClUWABZgZyhQdRswMzMzM2vP4pBmRV01ep2lJn2hAH4CF4hZHMZs1vXCMZnMaVLVWwBV
+				AF8AfklefvBukv7XX0l/CIT3pJ4xaHskz3+uaLBUTg99iFE3Y9FgJfW7wuOn7hcAgICgZPo7Tjkp
+				5sFweD1iCfOt39s3X5Aho5Qi6qyeNR73PRUAAcE4QnlCD8SjQt+kiALgs/5Qt9VHXcIo5p+6/72d
+				CFt9WlVqgxn7e7d0fe6btwZf9OkTG4Fa/PyKj99v6D3MJr09x/zzJZE0OOeU1auH+dY6p1RU1zJN
+				apP6b+9HDAshh/l7pK0/vm/Ju2C2S+OywplQ1J8nKrfZMKeLyTLMJVQmXJu0YuEymG3jeTQcnIRF
+				sNJK65NSTSp8kbW2rvHwbJpMhmMRnHHfe+y9Vft+vqCrPvhHk8hWpw1VtT6/LwGBQYGwC9fLw6tQ
+				xUnIhVatnLnD8HAW7wrUJDLG1m+qiqpp05GobiWlXWWjUCyORaRrXLpti2SyDCETlEZlm3AQDAGx
+				6D12Q/W6kJNuk47rxMddpZWG2P/eUGZwaA0CfqDRPKcYGhoRSZIkHWBEhObK5iZJDh5UeEgGjQ8u
+				aZCA2LMtLM0L5fh7DuOExchwWrasjThGS3zI97t6rxFcx+X4ZtnKdkxmT6a9CIS3vXxLioEus/FA
+				iMR3t1xoU0WZY3lm1lMIJbcPmz3nhT9I5AP57wFkISSwmG0I9h0c5ry3bJUfs1YW51guCzk9NWSi
+				sWUsFQ0iwWVoKjw9macorRtHXckL7t9MW3BAM3ieHtZhkI6Y/KOnLM1DLhvLTVS1nM401YYBAe3D
+				lDc6lL07xwd553TnagmBZDFLWHf7G0+gbK3l0iMMMI/qROmArS+uAIYJc6c7Hy7yxW8SaLz6KET1
+				fHYcJHu09ETSFqTltyNDnPgZwz4NGulperOuDwjLm7CN3HXAH4NXBQ==|
+			)
+			(checksum "52E859F982DCFD11C82F63EF824A3060")
+		)
+		(file
+			(name "thesis_title_block.kicad_wks")
+			(type worksheet)
+			(data |KLUv/WA+ClUWABZgZyhQdRswMzMzM2vP4pBmRV01ep2lJn2hAH4CF4hZHMZs1vXCMZnMaVLVWwBV
+				AF8AfklefvBukv7XX0l/CIT3pJ4xaHskz3+uaLBUTg99iFE3Y9FgJfW7wuOn7hcAgICgZPo7Tjkp
+				5sFweD1iCfOt39s3X5Aho5Qi6qyeNR73PRUAAcE4QnlCD8SjQt+kiALgs/5Qt9VHXcIo5p+6/72d
+				CFt9WlVqgxn7e7d0fe6btwZf9OkTG4Fa/PyKj99v6D3MJr09x/zzJZE0OOeU1auH+dY6p1RU1zJN
+				apP6b+9HDAshh/l7pK0/vm/Ju2C2S+OywplQ1J8nKrfZMKeLyTLMJVQmXJu0YuEymG3jeTQcnIRF
+				sNJK65NSTSp8kbW2rvHwbJpMhmMRnHHfe+y9Vft+vqCrPvhHk8hWpw1VtT6/LwGBQYGwC9fLw6tQ
+				xUnIhVatnLnD8HAW7wrUJDLG1m+qiqpp05GobiWlXWWjUCyORaRrXLpti2SyDCETlEZlm3AQDAGx
+				6D12Q/W6kJNuk47rxMddpZWG2P/eUGZwaA0CfqDRPKcYGhoRSZIkHWBEhObK5iZJDh5UeEgGjQ8u
+				aZCA2LMtLM0L5fh7DuOExchwWrasjThGS3zI97t6rxFcx+X4ZtnKdkxmT6a9CIS3vXxLioEus/FA
+				iMR3t1xoU0WZY3lm1lMIJbcPmz3nhT9I5AP57wFkISSwmG0I9h0c5ry3bJUfs1YW51guCzk9NWSi
+				sWUsFQ0iwWVoKjw9macorRtHXckL7t9MW3BAM3ieHtZhkI6Y/KOnLM1DLhvLTVS1nM401YYBAe3D
+				lDc6lL07xwd553TnagmBZDFLWHf7G0+gbK3l0iMMMI/qROmArS+uAIYJc6c7Hy7yxW8SaLz6KET1
+				fHYcJHu09ETSFqTltyNDnPgZwz4NGulperOuDwjLm7CN3HXAH4NXBQ==|
+			)
+			(checksum "52E859F982DCFD11C82F63EF824A3060")
+		)
+	)
+)

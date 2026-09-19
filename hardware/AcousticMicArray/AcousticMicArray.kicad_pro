@@ -682,7 +682,7 @@
     "meta": {
       "version": 1
     },
-    "page_layout_descr_file": "kicad-embed://thesis_title_block.kicad_wks",
+    "page_layout_descr_file": "thesis_title_block.kicad_wks",
     "plot_directory": "",
     "reuse_designators": true,
     "subpart_first_id": 65,
