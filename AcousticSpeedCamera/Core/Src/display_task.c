@@ -4,6 +4,7 @@
 #include "task.h"
 #include "os_objects.h"
 #include "ui.h"
+#include "logger.h"
 
 ILI9341_HandleTypeDef lcd = {
 	.hspi = &hspi3,
@@ -22,12 +23,7 @@ ILI9341_HandleTypeDef lcd = {
 };
 
 void vDisplayTask(void *parameter) {
-	if(osMutexAcquire(uartMutex, osWaitForever) == osOK) {
-		const char *msg = "[INFO] display task start\r\n";
-		HAL_UART_Transmit(&hcom_uart[COM1], (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-		osMutexRelease(uartMutex);
-	}
-
+	LOG_INFO("display task start");
 	display_init(&lcd);
 
 	lv_lock();

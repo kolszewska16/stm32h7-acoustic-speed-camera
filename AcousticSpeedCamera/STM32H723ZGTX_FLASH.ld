@@ -165,7 +165,31 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM_D1
-
+  
+  .ram_d2 (NOLOAD):
+  {
+  	. = ALIGN(4);
+  	*(.ram_d2)
+  	*(.ram_d2*)
+  	. = ALIGN(4);
+  } >RAM_D2
+  
+  .ram_d3 (NOLOAD):
+  {
+  	. = ALIGN(4);
+  	*(.ram_d3)
+  	*(.ram_d3*)
+  	. = ALIGN(4);
+  } >RAM_D3
+ 
+  .dtcm (NOLOAD):
+  {
+  	. = ALIGN(4);
+  	*(.dtcm)
+  	*(.dtcm*)
+  	. = ALIGN(4);
+  } >DTCMRAM
+  
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {
