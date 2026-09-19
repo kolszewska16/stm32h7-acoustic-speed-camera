@@ -8,6 +8,7 @@
 #define FRAME_WIDTH 320
 #define FRAME_HEIGHT 240
 #define FRAME_BPP 2
+#define INIT_ATTEMPTS 3
 
 static Camera_HandleTypeDef s_hcam;
 static uint8_t frame_buf[FRAME_WIDTH * FRAME_HEIGHT * FRAME_BPP];
@@ -23,16 +24,26 @@ void vCameraTask(void *parameter) {
 		.pwdn_pin = GPIO_PIN_5,
 	};
 
-	osDelay(100);
-	if(Camera_Init(&s_hcam, &cfg, frame_buf, sizeof(frame_buf),
-		OV5640_R320x240, OV5640_RGB565) != CAMERA_OK)
-	{
+	osDelay(500);
+
+	Camera_StatusTypeDef status = CAMERA_ERROR;
+	for(int attempt = 0; attempt < INIT_ATTEMPTS && status != CAMERA_OK; attempt++) {
+		LOG_INFO("attempt=%d", attempt);
+		status = Camera_Init(&s_hcam, &cfg, frame_buf, sizeof(frame_buf),
+				OV5640_R320x240, OV5640_RGB565);
+
+		if(status != CAMERA_OK) {
+			osDelay(200);
+		}
+	}
+
+	if(status != CAMERA_OK) {
 		LOG_ERROR("camera initialization failed");
 		vTaskDelete(NULL);
 		return;
 	}
 
-	LOG_INFO("initialization completed");
+	LOG_INFO("camera initialization completed");
 
 	if(Camera_CaptureSnapshot(&s_hcam) != CAMERA_OK) {
 		LOG_ERROR("failed to capture the snapshot");

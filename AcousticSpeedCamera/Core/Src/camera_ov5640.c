@@ -1,6 +1,7 @@
 #include "camera_ov5640.h"
 #include "ov5640_reg.h"
 #include "ov5640_dcmi.h"
+#include "logger.h"
 
 Camera_StatusTypeDef Camera_Init(Camera_HandleTypeDef *hcam,
 		const OV5640_HandleTypedef *cfg,
@@ -8,7 +9,7 @@ Camera_StatusTypeDef Camera_Init(Camera_HandleTypeDef *hcam,
 		uint32_t resolution, uint32_t pixel_format)
 {
 	if(hcam == NULL || cfg == NULL || frame_buf == NULL ||
-		frame_size == 0 || resolution == 0 || pixel_format == 0)
+		frame_size == 0)
 	{
 		return CAMERA_ERROR;
 	}

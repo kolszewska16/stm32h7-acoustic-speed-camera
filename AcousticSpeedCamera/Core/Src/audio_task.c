@@ -17,9 +17,11 @@ void vAudioTask(void *parameter) {
 	audio_dsp_init();
 	if(audio_hardware_start() != HAL_OK) {
 		LOG_ERROR("DFSDM: initialization failed");
+		vTaskDelete(NULL);
+		return;
 	}
 
-	LOG_INFO("initialization completed");
+	LOG_INFO("audio initialization completed");
 
 	while(1) {
 		uint32_t flags = osThreadFlagsWait(0x03, osFlagsWaitAny, osWaitForever);
