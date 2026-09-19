@@ -19,4 +19,8 @@ Camera_DCMI_StatusTypedef Camera_DCMI_CaptureSnapshot(void);
 
 uint8_t Camera_DCMI_IsFrameReady(void);
 
+int32_t Camera_DCMI_GetState(void);
+
+uint32_t Camera_DCMI_GetLastError(void);
+
 #endif /* INC_OV5640_DCMI_H_ */

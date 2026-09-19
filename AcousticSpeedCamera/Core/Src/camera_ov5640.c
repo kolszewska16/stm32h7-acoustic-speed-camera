@@ -11,6 +11,7 @@ Camera_StatusTypeDef Camera_Init(Camera_HandleTypeDef *hcam,
 	if(hcam == NULL || cfg == NULL || frame_buf == NULL ||
 		frame_size == 0)
 	{
+		LOG_ERROR("wrong entry value");
 		return CAMERA_ERROR;
 	}
 
@@ -23,24 +24,29 @@ Camera_StatusTypeDef Camera_Init(Camera_HandleTypeDef *hcam,
 
 	// I2C and hardware reset
 	if(OV5640_BSP_Init(&hcam->sensor, &hcam->cam) != OV5640_OK) {
+		LOG_ERROR("BSP: initialization failed");
 		return CAMERA_ERROR;
 	}
 
 	// OV5640 communication check
 	if(OV5640_ReadID(&hcam->sensor, &id) != OV5640_OK) {
+		LOG_ERROR("failed to read ID");
 		return CAMERA_ERROR;
 	}
 	if(id != OV5640_ID) {
+		LOG_ERROR("wrong ID");
 		return CAMERA_WRONG_ID;
 	}
 
 	// OV5640's registers configuration
 	if(OV5640_Init(&hcam->sensor, resolution, pixel_format) != OV5640_OK) {
+		LOG_ERROR("failed to configure registers");
 		return CAMERA_ERROR;
 	}
 
 	// DVP mode
 	if(OV5640_EnableDVPMode(&hcam->sensor) != OV5640_OK) {
+		LOG_ERROR("faild to choose DVP mode");
 		return CAMERA_ERROR;
 	}
 
@@ -48,11 +54,13 @@ Camera_StatusTypeDef Camera_Init(Camera_HandleTypeDef *hcam,
 	if(OV5640_SetPolarities(&hcam->sensor, OV5640_POLARITY_PCLK_HIGH,
 		OV5640_POLARITY_HREF_HIGH, OV5640_POLARITY_VSYNC_HIGH) != OV5640_OK)
 	{
+		LOG_ERROR("wrong polarities");
 		return CAMERA_ERROR;
 	}
 
 	// DCMI + DMA
 	if(Camera_DCMI_Init(frame_buf, frame_size) != CAMERA_DCMI_OK) {
+		LOG_ERROR("DCMI&DMA: failed to initialize");
 		return CAMERA_ERROR;
 	}
 

@@ -6,6 +6,8 @@
 #include "cmsis_os2.h"
 #include "semphr.h"
 
+extern volatile bool camera_ready;
+extern volatile bool sd_ready;
 extern volatile bool ui_ready;
 
 extern osMutexId_t uartMutex;
