@@ -38,7 +38,7 @@ extern DFSDM_Filter_HandleTypeDef hdfsdm1_filter1;
 
 extern DFSDM_Channel_HandleTypeDef hdfsdm1_channel1;
 
-extern DFSDM_Channel_HandleTypeDef hdfsdm1_channel3;
+extern DFSDM_Channel_HandleTypeDef hdfsdm1_channel4;
 
 /* USER CODE BEGIN Private defines */
 
