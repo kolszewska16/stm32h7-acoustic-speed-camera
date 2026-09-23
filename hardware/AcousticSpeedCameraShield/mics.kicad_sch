@@ -5,6 +5,8 @@
 	(uuid "c057b5ae-7ed2-4243-a48d-fe82fee78cb2")
 	(paper "A4")
 	(title_block
+		(title "Interfejs Mikrofonów")
+		(date "2026-09-20")
 		(rev "1.0")
 		(comment 1 "Kinga Olszewska")
 		(comment 2 "AGH")
@@ -577,7 +579,7 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 97.79) (xy 147.32 97.79)
+			(xy 149.86 97.79) (xy 147.32 97.79)
 		)
 		(stroke
 			(width 0)
@@ -587,7 +589,7 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 92.71) (xy 161.29 92.71)
+			(xy 149.86 92.71) (xy 133.35 92.71)
 		)
 		(stroke
 			(width 0)
@@ -597,7 +599,7 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 90.17) (xy 148.59 90.17)
+			(xy 149.86 90.17) (xy 146.05 90.17)
 		)
 		(stroke
 			(width 0)
@@ -607,7 +609,7 @@
 	)
 	(wire
 		(pts
-			(xy 148.59 90.17) (xy 148.59 88.9)
+			(xy 146.05 90.17) (xy 146.05 88.9)
 		)
 		(stroke
 			(width 0)
@@ -617,7 +619,7 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 100.33) (xy 147.32 100.33)
+			(xy 149.86 100.33) (xy 147.32 100.33)
 		)
 		(stroke
 			(width 0)
@@ -627,7 +629,7 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 95.25) (xy 147.32 95.25)
+			(xy 149.86 95.25) (xy 147.32 95.25)
 		)
 		(stroke
 			(width 0)
@@ -637,40 +639,41 @@
 	)
 	(hierarchical_label "PDM_DAT1"
 		(shape input)
-		(at 147.32 97.79 0)
+		(at 147.32 97.79 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "78e65ce8-8c2b-41a3-aa8b-c766476fe334")
 	)
-	(hierarchical_label "PDM_DAT2"
+	(hierarchical_label "PDM_DAT4"
 		(shape input)
-		(at 147.32 100.33 0)
+		(at 147.32 100.33 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "a690784d-c956-4ecd-9655-4294e0e46185")
 	)
 	(hierarchical_label "PDM_CLK"
 		(shape input)
-		(at 147.32 95.25 0)
+		(at 147.32 95.25 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "e00575da-52b7-448b-85ab-4858354b9346")
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 148.59 88.9 0)
+		(at 146.05 88.9 0)
+		(mirror y)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -681,7 +684,7 @@
 		(fields_autoplaced yes)
 		(uuid "36d226e0-a696-4925-a02f-169f9a602812")
 		(property "Reference" "#PWR029"
-			(at 148.59 92.71 0)
+			(at 146.05 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -692,7 +695,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 148.59 83.82 0)
+			(at 146.05 83.82 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -702,7 +705,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 148.59 88.9 0)
+			(at 146.05 88.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -713,7 +716,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 148.59 88.9 0)
+			(at 146.05 88.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -724,7 +727,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 148.59 88.9 0)
+			(at 146.05 88.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -748,7 +751,8 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 161.29 92.71 0)
+		(at 133.35 92.71 0)
+		(mirror y)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -759,7 +763,7 @@
 		(fields_autoplaced yes)
 		(uuid "46f1f358-bd07-4d40-a23a-fe13967e5c8a")
 		(property "Reference" "#PWR030"
-			(at 161.29 99.06 0)
+			(at 133.35 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -770,7 +774,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 161.29 97.79 0)
+			(at 133.35 97.79 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -780,7 +784,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 161.29 92.71 0)
+			(at 133.35 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -791,7 +795,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 161.29 92.71 0)
+			(at 133.35 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -802,7 +806,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 161.29 92.71 0)
+			(at 133.35 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -826,8 +830,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x05_Socket")
-		(at 139.7 95.25 0)
-		(mirror y)
+		(at 154.94 95.25 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -837,7 +840,7 @@
 		(dnp no)
 		(uuid "6315bfd1-b432-42ff-8ea4-82258943fd9f")
 		(property "Reference" "J1"
-			(at 140.335 105.41 0)
+			(at 154.305 105.41 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -847,7 +850,7 @@
 			)
 		)
 		(property "Value" "Conn_01x05_Socket"
-			(at 140.335 102.87 0)
+			(at 154.305 102.87 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -857,7 +860,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 139.7 95.25 0)
+			(at 154.94 95.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -868,7 +871,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 139.7 95.25 0)
+			(at 154.94 95.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -879,7 +882,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x05, script generated"
-			(at 139.7 95.25 0)
+			(at 154.94 95.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

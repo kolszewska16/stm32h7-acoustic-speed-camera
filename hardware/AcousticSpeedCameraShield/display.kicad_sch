@@ -5,6 +5,8 @@
 	(uuid "e4603344-6b20-47ed-974b-d6b2ece79f14")
 	(paper "A4")
 	(title_block
+		(title "Interfejs Wyświetlacza")
+		(date "2026-09-20")
 		(rev "1.0")
 		(comment 1 "Kinga Olszewska")
 		(comment 2 "AGH")
@@ -221,129 +223,6 @@
 						)
 					)
 					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "Connector:TestPoint"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0.762)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "TP"
-				(at 0 6.858 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "TestPoint"
-				(at 0 5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 5.08 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 5.08 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "test point"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "test point tp"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Pin* Test*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "TestPoint_0_1"
-				(circle
-					(center 0 3.302)
-					(radius 0.762)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "TestPoint_1_1"
-				(pin passive line
-					(at 0 0 90)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -766,36 +645,6 @@
 		)
 	)
 	(junction
-		(at 140.97 102.87)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "0c04e3fa-a347-450f-9b71-1794ae5713b0")
-	)
-	(junction
-		(at 140.97 97.79)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "28525efb-0fda-4aae-a06f-4b6a3d380318")
-	)
-	(junction
-		(at 140.97 107.95)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "691149f0-2525-4f13-8392-11fe168c07f1")
-	)
-	(junction
-		(at 140.97 100.33)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "8c3ae1bf-52ee-445d-a399-76778fbf5116")
-	)
-	(junction
-		(at 140.97 110.49)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a7c5a345-b6af-4761-8de7-f480fc881b18")
-	)
-	(junction
 		(at 151.13 95.25)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -807,81 +656,15 @@
 		(color 0 0 0 0)
 		(uuid "ca08adf0-5898-430c-ab4c-70c49f25ec95")
 	)
-	(junction
-		(at 140.97 105.41)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e9ae9db5-ebfc-48dd-a854-a97094c82253")
-	)
 	(wire
 		(pts
-			(xy 127 96.52) (xy 140.97 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1038b0f0-fa09-471f-b40b-945c32084033")
-	)
-	(wire
-		(pts
-			(xy 140.97 96.52) (xy 140.97 97.79)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "14c4ead3-efe8-4f4d-bdad-f28cd76a533e")
-	)
-	(wire
-		(pts
-			(xy 140.97 105.41) (xy 160.02 105.41)
+			(xy 142.24 105.41) (xy 160.02 105.41)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "1ca86942-798a-42fb-8127-5e7ebabc7b2d")
-	)
-	(wire
-		(pts
-			(xy 140.97 101.6) (xy 140.97 102.87)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "264f3331-b782-4b37-bcf9-954cb647239f")
-	)
-	(wire
-		(pts
-			(xy 139.7 97.79) (xy 140.97 97.79)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "26a0db5e-020f-4717-9ac2-03f3f84f5ac2")
-	)
-	(wire
-		(pts
-			(xy 139.7 107.95) (xy 140.97 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3470bc55-ff50-42f4-a2c8-035baf9cde89")
-	)
-	(wire
-		(pts
-			(xy 140.97 106.68) (xy 140.97 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "38cfd84f-4291-4b87-a85e-f93b13ca96d2")
 	)
 	(wire
 		(pts
@@ -915,43 +698,13 @@
 	)
 	(wire
 		(pts
-			(xy 127 104.14) (xy 140.97 104.14)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6c8a5652-766f-4b0e-80ec-b04a57adcaf3")
-	)
-	(wire
-		(pts
-			(xy 140.97 107.95) (xy 160.02 107.95)
+			(xy 142.24 107.95) (xy 160.02 107.95)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "73cad9d8-dab7-440e-8155-cea7e9016475")
-	)
-	(wire
-		(pts
-			(xy 139.7 105.41) (xy 140.97 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "762d4d63-979a-4339-9df0-e02ea9fbbbd5")
-	)
-	(wire
-		(pts
-			(xy 140.97 109.22) (xy 140.97 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7a873134-6f1f-4db0-99c8-f2479b463913")
 	)
 	(wire
 		(pts
@@ -975,37 +728,7 @@
 	)
 	(wire
 		(pts
-			(xy 139.7 110.49) (xy 140.97 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8d8a222c-02f2-4b91-96ad-39d7b054a2ef")
-	)
-	(wire
-		(pts
-			(xy 140.97 99.06) (xy 140.97 100.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ac6896ee-038a-467c-8bfc-faa090756ff0")
-	)
-	(wire
-		(pts
-			(xy 127 109.22) (xy 140.97 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ca758d25-9626-40e8-bd6b-e039c4574776")
-	)
-	(wire
-		(pts
-			(xy 140.97 102.87) (xy 160.02 102.87)
+			(xy 142.24 102.87) (xy 160.02 102.87)
 		)
 		(stroke
 			(width 0)
@@ -1015,17 +738,7 @@
 	)
 	(wire
 		(pts
-			(xy 139.7 102.87) (xy 140.97 102.87)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cca4681f-5b21-4cf2-8348-9816b6b8701b")
-	)
-	(wire
-		(pts
-			(xy 140.97 110.49) (xy 160.02 110.49)
+			(xy 142.24 110.49) (xy 160.02 110.49)
 		)
 		(stroke
 			(width 0)
@@ -1035,37 +748,7 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 104.14) (xy 140.97 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d415eac2-10f8-47f2-9e97-0ed2e0977599")
-	)
-	(wire
-		(pts
-			(xy 127 99.06) (xy 140.97 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d55930c5-ff86-4c04-a3ff-9c2eee972069")
-	)
-	(wire
-		(pts
-			(xy 139.7 100.33) (xy 140.97 100.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d8d8f2a0-103e-4f16-bfd2-7f1f85a18462")
-	)
-	(wire
-		(pts
-			(xy 140.97 100.33) (xy 160.02 100.33)
+			(xy 142.24 100.33) (xy 160.02 100.33)
 		)
 		(stroke
 			(width 0)
@@ -1095,7 +778,7 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 97.79) (xy 160.02 97.79)
+			(xy 142.24 97.79) (xy 160.02 97.79)
 		)
 		(stroke
 			(width 0)
@@ -1103,29 +786,9 @@
 		)
 		(uuid "ef67970c-10ae-4f73-892e-29dcef4eac83")
 	)
-	(wire
-		(pts
-			(xy 127 101.6) (xy 140.97 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f6f8b760-27ed-4f40-9b04-ae0c23368e7a")
-	)
-	(wire
-		(pts
-			(xy 127 106.68) (xy 140.97 106.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ffc38c5e-1e0f-4cca-9aa1-7b0a07a9fe91")
-	)
 	(hierarchical_label "DISP_RST"
 		(shape input)
-		(at 139.7 107.95 180)
+		(at 142.24 107.95 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1136,7 +799,7 @@
 	)
 	(hierarchical_label "DISP_DC"
 		(shape input)
-		(at 139.7 105.41 180)
+		(at 142.24 105.41 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1147,7 +810,7 @@
 	)
 	(hierarchical_label "DISP_BL"
 		(shape input)
-		(at 139.7 110.49 180)
+		(at 142.24 110.49 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1158,7 +821,7 @@
 	)
 	(hierarchical_label "DISP_CLK"
 		(shape input)
-		(at 139.7 100.33 180)
+		(at 142.24 100.33 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1169,7 +832,7 @@
 	)
 	(hierarchical_label "DISP_CS"
 		(shape input)
-		(at 139.7 102.87 180)
+		(at 142.24 102.87 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1180,7 +843,7 @@
 	)
 	(hierarchical_label "DISP_DIN"
 		(shape input)
-		(at 139.7 97.79 180)
+		(at 142.24 97.79 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1188,310 +851,6 @@
 			(justify right)
 		)
 		(uuid "cefc60d2-4961-4055-add8-1510edf8e99b")
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 127 101.6 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "0b178a27-2d1a-474c-8db0-c36d0c39cc66")
-		(property "Reference" "TP19"
-			(at 107.95 101.6 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TP_DISP_CS"
-			(at 116.586 101.6 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 96.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 96.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "test point"
-			(at 127 101.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "7c312b9a-ca45-4c1d-bee0-df85d20aaa35")
-		)
-		(instances
-			(project "AcousticSpeedCameraShield"
-				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62/d58a5339-ed5e-4fe3-b0a0-f0baa5a05644"
-					(reference "TP19")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 127 96.52 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "13ef6cf0-7374-4178-9229-24aa03d83009")
-		(property "Reference" "TP17"
-			(at 107.696 96.52 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TP_DISP_DIN"
-			(at 116.586 96.52 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "test point"
-			(at 127 96.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f001d01e-cbb5-481e-bb87-b8520bbb0ef8")
-		)
-		(instances
-			(project "AcousticSpeedCameraShield"
-				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62/d58a5339-ed5e-4fe3-b0a0-f0baa5a05644"
-					(reference "TP17")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 127 109.22 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "235bc83b-4089-4616-9a1a-9be363c702a4")
-		(property "Reference" "TP22"
-			(at 108.204 109.22 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TP_DISP_BL"
-			(at 116.84 109.22 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 104.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 104.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "test point"
-			(at 127 109.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f1330ceb-98e3-4fa2-a6a9-7f52a01592fb")
-		)
-		(instances
-			(project "AcousticSpeedCameraShield"
-				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62/d58a5339-ed5e-4fe3-b0a0-f0baa5a05644"
-					(reference "TP22")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 127 99.06 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "315eeae3-5e42-4965-950d-d0e3496ba1a3")
-		(property "Reference" "TP18"
-			(at 107.188 99.06 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TP_DISP_CLK"
-			(at 116.332 99.06 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 93.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 93.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "test point"
-			(at 127 99.06 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "3894d196-094c-453a-99f5-02f36643daea")
-		)
-		(instances
-			(project "AcousticSpeedCameraShield"
-				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62/d58a5339-ed5e-4fe3-b0a0-f0baa5a05644"
-					(reference "TP18")
-					(unit 1)
-				)
-			)
-		)
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -1645,158 +1004,6 @@
 			(project "AcousticSpeedCameraShield"
 				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62/d58a5339-ed5e-4fe3-b0a0-f0baa5a05644"
 					(reference "#PWR011")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 127 106.68 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "8797b8be-b784-428c-a59d-64ceb04628e0")
-		(property "Reference" "TP21"
-			(at 107.442 106.68 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TP_DISP_RST"
-			(at 116.586 106.68 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 101.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 101.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "test point"
-			(at 127 106.68 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ec3557ca-9071-4d2c-9812-594eb4c8498e")
-		)
-		(instances
-			(project "AcousticSpeedCameraShield"
-				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62/d58a5339-ed5e-4fe3-b0a0-f0baa5a05644"
-					(reference "TP21")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 127 104.14 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "91f9611a-8712-4efd-8b22-0f32bf9786b1")
-		(property "Reference" "TP20"
-			(at 107.95 104.14 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TP_DISP_DC"
-			(at 116.586 104.14 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 99.06 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 99.06 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "test point"
-			(at 127 104.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "13a857f6-4626-4906-b2b5-61952cfc5e9c")
-		)
-		(instances
-			(project "AcousticSpeedCameraShield"
-				(path "/c341bf02-9cc6-4779-baff-2a7769fd5b62/d58a5339-ed5e-4fe3-b0a0-f0baa5a05644"
-					(reference "TP20")
 					(unit 1)
 				)
 			)

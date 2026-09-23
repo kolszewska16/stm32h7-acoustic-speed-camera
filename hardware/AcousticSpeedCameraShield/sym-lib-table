@@ -1,4 +1,4 @@
 (sym_lib_table
 	(version 7)
-	(lib (name "AcousticSpeedCamera") (type "KiCad") (uri "${KIPRJMOD}/AcousticSpeedCamera.kicad_sym") (options "") (descr ""))
+	(lib (name "AcousticSpeedCamera") (type "KiCad") (uri "${KIPRJMOD}/libs/AcousticSpeedCamera.kicad_sym") (options "") (descr ""))
 )
