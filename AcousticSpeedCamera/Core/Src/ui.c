@@ -32,6 +32,9 @@ static lv_obj_t *max_val_label;
 /** @brief Label showing the current NORM/ALARM noise status. */
 static lv_obj_t *norm_status_label;
 
+/** @brief Label showing the battery icon and charge level in percent. */
+static lv_obj_t *battery_label;
+
 /**
  * @brief Display currently being flushed via DMA.
  *
@@ -93,7 +96,8 @@ void measurement_screen_init(void) {
 	lv_label_set_text(title_label, "TRAFFIC NOISE MONITOR");
 	lv_obj_set_style_text_color(title_label, lv_color_hex(0x7F8C8D), LV_PART_MAIN);
 	lv_obj_set_style_text_font(title_label, &lv_font_montserrat_14, LV_PART_MAIN);
-	lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 15);
+//	lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 15);
+	lv_obj_align(title_label, LV_ALIGN_TOP_LEFT, 15, 15);
 
 	// top-left: current noise status (NORM / ALARM), updated in update_norm_status_label()
 	norm_status_label = lv_label_create(scr);
@@ -101,6 +105,13 @@ void measurement_screen_init(void) {
 	lv_obj_set_style_text_color(norm_status_label, lv_color_hex(0x2ECC71), LV_PART_MAIN);
 	lv_obj_set_style_text_font(norm_status_label, &lv_font_montserrat_14, LV_PART_MAIN);
 	lv_obj_align(norm_status_label, LV_ALIGN_TOP_LEFT, 15, 45);
+
+	// top-right: battery level, updated in battery_status_label()
+	battery_label = lv_label_create(scr);
+	lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_FULL " --%");
+	lv_obj_set_style_text_color(battery_label, lv_color_hex(0x95A5A6), LV_PART_MAIN);
+	lv_obj_set_style_text_font(battery_label, &lv_font_montserrat_14, LV_PART_MAIN);
+	lv_obj_align(battery_label, LV_ALIGN_TOP_RIGHT, -10, 15);
 
 	// top-right: peak dBA value recorded so far, updated in update_max_val_label()
 	max_val_label = lv_label_create(scr);
@@ -186,6 +197,44 @@ void update_norm_status_label(float32_t value) {
 		lv_label_set_text(norm_status_label, "NORM");
 		lv_obj_set_style_text_color(norm_status_label, lv_color_hex(0x2ECC71), LV_PART_MAIN);
 	}
+}
+
+void update_battery_status_label(uint8_t percent) {
+	if(percent > 100) {
+		percent = 100;
+	}
+
+	const char *symbol;
+	uint32_t color;
+
+	if(percent > 75) {
+		symbol = LV_SYMBOL_BATTERY_FULL;
+		color = 0x2ECC71;
+	}
+	else if(percent > 50) {
+		symbol = LV_SYMBOL_BATTERY_3;
+		color = 0x2ECC71;
+	}
+	else if(percent > 25) {
+		symbol = LV_SYMBOL_BATTERY_2;
+		color = 0xF39C12;
+	}
+	else if(percent > 10) {
+		symbol = LV_SYMBOL_BATTERY_1;
+		color = 0xF39C12;
+	}
+	else {
+		symbol = LV_SYMBOL_BATTERY_EMPTY;
+		color = 0xE74C3C;
+	}
+
+	char buf[32];
+	lv_snprintf(buf, sizeof(buf), "%s %d%%", symbol, (int)percent);
+
+	lv_lock();
+	lv_label_set_text(battery_label, buf);
+	lv_obj_set_style_text_color(battery_label, lv_color_hex(color), LV_PART_MAIN);
+	lv_unlock();
 }
 
 void update_ui(float32_t dBA_avg, float32_t dBA_max) {
