@@ -130,6 +130,17 @@ void update_norm_status_label(float32_t value);
  *
  * @details
  *
+ * @param[in] percent
+ *
+ * @return None
+ */
+void update_battery_status_label(uint8_t percent);
+
+/**
+ * @brief
+ *
+ * @details
+ *
  * @param[in] dBA_avg
  * @param[in] dBA_max
  *

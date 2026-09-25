@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "adc.h"
 #include "dcmi.h"
 #include "dfsdm.h"
 #include "dma.h"
@@ -139,6 +140,7 @@ int main(void)
   MX_SPI3_Init();
   MX_DCMI_Init();
   MX_I2C1_Init();
+  MX_ADC3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

@@ -33,6 +33,7 @@
 #include "audio_task.h"
 #include "display_task.h"
 #include "camera_task.h"
+#include "battery_monitor.h"
 
 /* USER CODE END Includes */
 
@@ -109,6 +110,7 @@ void MX_FREERTOS_Init(void) {
   displayTaskHandle = osThreadNew(vDisplayTask, NULL, &displayTask_attr);
   cameraTaskHandle = osThreadNew(vCameraTask, NULL, &cameraTask_attr);
   audioTaskHandle = osThreadNew(vAudioTask, NULL, &audioTask_attr);
+  batteryTaskHandle = osThreadNew(vBatteryTask, NULL, &batteryTask_attr);
 
   /* USER CODE END RTOS_THREADS */
 

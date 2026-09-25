@@ -1,4 +1,5 @@
 #include "ov5640_dcmi.h"
+#include "dcmi.h"
 #include "logger.h"
 
 static uint32_t s_frame_addr;
