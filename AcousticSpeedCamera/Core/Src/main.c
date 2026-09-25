@@ -19,9 +19,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "adc.h"
+#include "dcmi.h"
 #include "dfsdm.h"
 #include "dma.h"
 #include "fatfs.h"
+#include "i2c.h"
 #include "spi.h"
 #include "gpio.h"
 
@@ -32,6 +35,8 @@
 #include "audio_processor.h"
 #include "sd_spi.h"
 #include "os_objects.h"
+#include "ili9341.h"
+#include "lvgl.h"
 
 /* USER CODE END Includes */
 
@@ -55,6 +60,8 @@
 COM_InitTypeDef BspCOMInit;
 
 /* USER CODE BEGIN PV */
+extern ILI9341_HandleTypeDef lcd;
+extern volatile lv_display_t *active_disp;
 extern osThreadId_t audioTaskHandle;
 
 /* USER CODE END PV */
@@ -95,6 +102,16 @@ void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm) {
 	}
 }
 
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if(hspi->Instance == SPI3) {
+		HAL_GPIO_WritePin(lcd.cs_port, lcd.cs_pin, GPIO_PIN_SET);
+
+		if(active_disp != NULL) {
+			lv_display_flush_ready((lv_display_t*)active_disp);
+		}
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -131,8 +148,12 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_DFSDM1_Init();
-  MX_FATFS_Init();
+  MX_SPI3_Init();
+  MX_DCMI_Init();
+  MX_I2C1_Init();
+  MX_ADC3_Init();
   MX_SPI4_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -226,6 +247,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  __HAL_RCC_PLLCLKOUT_ENABLE(RCC_PLL1_DIVQ);
+  HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_2);
 }
 
 /* USER CODE BEGIN 4 */
@@ -254,6 +277,17 @@ void MPU_Config(void)
   MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER1;
+  MPU_InitStruct.BaseAddress = 0x24000000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_256KB;
+  MPU_InitStruct.SubRegionDisable = 0x0;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */
