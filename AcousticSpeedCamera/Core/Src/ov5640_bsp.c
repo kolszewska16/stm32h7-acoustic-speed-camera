@@ -60,7 +60,7 @@ static void OV5640_BSP_HW_Reset() {
 	HAL_GPIO_WritePin(s_active_cam->pwdn_port, s_active_cam->pwdn_pin, GPIO_PIN_RESET);
 	HAL_Delay(5);
 	HAL_GPIO_WritePin(s_active_cam->rst_port, s_active_cam->rst_pin, GPIO_PIN_SET);
-	HAL_Delay(20);
+	HAL_Delay(100);
 }
 
 int32_t OV5640_BSP_Init(OV5640_Object_t *pObj, OV5640_HandleTypedef *cam) {

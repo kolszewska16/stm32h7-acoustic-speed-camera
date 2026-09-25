@@ -66,7 +66,7 @@ uint8_t Battery_VoltageToPercent(float v_pack) {
 void vBatteryTask(void *parameter) {
 	LOG_INFO("battery task start");
 
-	while(!ui_ready) {
+	while(!camera_ready || !ui_ready) {
 		osDelay(50);
 	}
 
