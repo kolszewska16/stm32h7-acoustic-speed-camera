@@ -1,0 +1,10 @@
+build/
+.venv/
+
+*.rgb565
+output_*.jpg
+
+*.o
+*.obj
+encode_jpeg
+encode_jpeg.exe
