@@ -12,7 +12,7 @@
 void vAudioTask(void *parameter) {
 	LOG_INFO("audio task start");
 
-	while(!camera_ready || !ui_ready) {
+	while(!camera_ready || !sd_ready || !ui_ready) {
 		osDelay(50);
 	}
 

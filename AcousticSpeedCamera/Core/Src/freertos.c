@@ -28,8 +28,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "fatfs.h"
 #include "hardware.h"
 #include "os_objects.h"
+#include "sd_logger.h"
 #include "audio_task.h"
 #include "display_task.h"
 #include "camera_task.h"
@@ -91,6 +93,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+	s_spi_dma_sem = osSemaphoreNew(1, 0, NULL);
+
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -99,6 +103,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+	xImageQueue = xQueueCreate(2, sizeof(ImageSaveRequest_t));
+
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -110,6 +116,7 @@ void MX_FREERTOS_Init(void) {
   displayTaskHandle = osThreadNew(vDisplayTask, NULL, &displayTask_attr);
   cameraTaskHandle = osThreadNew(vCameraTask, NULL, &cameraTask_attr);
   audioTaskHandle = osThreadNew(vAudioTask, NULL, &audioTask_attr);
+  sdLoggerTaskHandle = osThreadNew(vSDLogTask, NULL, &sdLoggerTask_attr);
   batteryTaskHandle = osThreadNew(vBatteryTask, NULL, &batteryTask_attr);
 
   /* USER CODE END RTOS_THREADS */

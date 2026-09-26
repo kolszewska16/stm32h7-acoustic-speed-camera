@@ -60,6 +60,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SD_CS_Pin GPIO_PIN_11
+#define SD_CS_GPIO_Port GPIOE
 #define CAM_RST_Pin GPIO_PIN_4
 #define CAM_RST_GPIO_Port GPIOG
 #define CAM_PWDN_Pin GPIO_PIN_5
