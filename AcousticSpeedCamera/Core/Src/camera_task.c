@@ -7,6 +7,7 @@
 #include "os_objects.h"
 #include "logger.h"
 #include "jpeg_encoder.h"
+#include "sd_logger.h"
 
 #define FRAME_WIDTH 160
 #define FRAME_HEIGHT 120
@@ -101,6 +102,15 @@ void vCameraTask(void *parameter) {
 			}
 
 			LOG_INFO("JPEG encoded: %lu bytes, %lu ms", jpeg_len, encode_time);
+
+			ImageSaveRequest_t req = {
+				.data = jpeg_data,
+				.len = jpeg_len,
+				.timestamp_ms = HAL_GetTick(),
+			};
+
+			xQueueSend(xImageQueue, &req, pdMS_TO_TICKS(100));
+			ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2000));
 		}
 		else {
 			LOG_ERROR("snapshot permanently failed after %d attempts", SNAPSHOT_MAX_ATTEMPTS);

@@ -5,10 +5,10 @@
 #include "arm_math.h"
 
 typedef struct {
+	uint8_t *data;
+	uint32_t len;
 	uint32_t timestamp_ms;
-	float32_t power;
-	float32_t dbspl_avg;
-} LogEntry_t;
+} ImageSaveRequest_t;
 
 void vSDLogTask(void *argument);
 

@@ -7,7 +7,7 @@
 #include "semphr.h"
 
 extern osSemaphoreId_t s_spi_dma_sem;
-extern QueueHandle_t xLogQueue;
+extern QueueHandle_t xImageQueue;
 
 extern volatile bool camera_ready;
 extern volatile bool sd_ready;

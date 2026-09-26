@@ -1,7 +1,7 @@
 #include "os_objects.h"
 
 osSemaphoreId_t s_spi_dma_sem;
-QueueHandle_t xLogQueue;
+QueueHandle_t xImageQueue;
 
 volatile bool camera_ready = false;
 volatile bool sd_ready = false;

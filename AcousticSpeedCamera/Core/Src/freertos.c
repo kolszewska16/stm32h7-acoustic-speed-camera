@@ -103,7 +103,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-	xLogQueue = xQueueCreate(32, sizeof(LogEntry_t));
+	xImageQueue = xQueueCreate(2, sizeof(ImageSaveRequest_t));
 
   /* USER CODE END RTOS_QUEUES */
 
@@ -116,7 +116,7 @@ void MX_FREERTOS_Init(void) {
   displayTaskHandle = osThreadNew(vDisplayTask, NULL, &displayTask_attr);
   cameraTaskHandle = osThreadNew(vCameraTask, NULL, &cameraTask_attr);
   audioTaskHandle = osThreadNew(vAudioTask, NULL, &audioTask_attr);
-//  sdLoggerTaskHandle = osThreadNew(vSDLogTask, NULL, &sdLoggerTask_attr);
+  sdLoggerTaskHandle = osThreadNew(vSDLogTask, NULL, &sdLoggerTask_attr);
   batteryTaskHandle = osThreadNew(vBatteryTask, NULL, &batteryTask_attr);
 
   /* USER CODE END RTOS_THREADS */
