@@ -24,6 +24,8 @@ FATFS USERFatFS;    /* File system object for USER logical drive */
 FIL USERFile;       /* File object for USER */
 
 /* USER CODE BEGIN Variables */
+#include "rtc.h"
+
 extern Diskio_drvTypeDef SD_Driver;
 
 /* USER CODE END Variables */
@@ -46,7 +48,19 @@ void MX_FATFS_Init(void)
 DWORD get_fattime(void)
 {
   /* USER CODE BEGIN get_fattime */
-  return 0;
+	RTC_TimeTypeDef time;
+	RTC_DateTypeDef date;
+
+	HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+
+	return ((DWORD)(date.Year + 2000 - 1980) << 25) |
+		((DWORD)date.Month << 21) |
+		((DWORD)date.Date << 16) |
+		((DWORD)time.Hours << 11) |
+		((DWORD)time.Minutes << 5) |
+		((DWORD)time.Seconds >> 1);
+
   /* USER CODE END get_fattime */
 }
 

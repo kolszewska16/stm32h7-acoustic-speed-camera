@@ -10,6 +10,7 @@
 #include "os_objects.h"
 #include "sd_spi.h"
 #include "logger.h"
+#include "rtc.h"
 
 #define IMAGE_QUEUE_TIMEOUT_MS 1000
 
@@ -39,8 +40,14 @@ void vSDLogTask(void *argument) {
 	ImageSaveRequest_t req;
 	while(1) {
 		if(xQueueReceive(xImageQueue, &req, pdMS_TO_TICKS(IMAGE_QUEUE_TIMEOUT_MS)) == pdTRUE) {
+			RTC_TimeTypeDef time;
+			RTC_DateTypeDef date;
+			HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
+			HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+
 			char filename[13];
-			snprintf(filename, sizeof(filename), "%08lu.jpg", (unsigned long)req.timestamp_ms);
+			snprintf(filename, sizeof(filename), "%02u%02u%02u%02u.jpg",
+				date.Date, time.Hours, time.Minutes, time.Seconds);
 
 			FIL img_file;
 			FRESULT img_fr = f_open(&img_file, filename, FA_WRITE | FA_CREATE_ALWAYS);

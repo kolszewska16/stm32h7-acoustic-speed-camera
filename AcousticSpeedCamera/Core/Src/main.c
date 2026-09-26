@@ -25,6 +25,7 @@
 #include "dma.h"
 #include "fatfs.h"
 #include "i2c.h"
+#include "rtc.h"
 #include "spi.h"
 #include "gpio.h"
 
@@ -154,8 +155,29 @@ int main(void)
   MX_ADC3_Init();
   MX_SPI4_Init();
   MX_FATFS_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
 
+  sTime.Hours = 21;
+  sTime.Minutes = 10;
+  sTime.Seconds = 0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+
+  if(HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK) {
+	  Error_Handler();
+  }
+
+  sDate.WeekDay = RTC_WEEKDAY_SATURDAY;
+  sDate.Month = RTC_MONTH_SEPTEMBER;
+  sDate.Date = 26;
+  sDate.Year = 26;
+
+  if(HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK) {
+	  Error_Handler();
+  }
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -212,9 +234,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = 64;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 4;
