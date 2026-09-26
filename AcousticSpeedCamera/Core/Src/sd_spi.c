@@ -29,11 +29,6 @@
 #define CMD58	58	/**< READ_OCR - reads the Operation Conditions Register. */
 #define ACMD41	41	/**< SD_SEND_OP_COND - initiates the card initialization process. */
 
-static SPI_HandleTypeDef *s_hspi;					/**< SPI peripheral handle used for all transactions. */
-static GPIO_TypeDef *s_cs_port;						/**< GPIO port of the chip-select (CS) pin. */
-static uint16_t s_cs_pin;							/**< GPIO pin number of the chip-select (CS) pin. */
-static sdCardType_t s_card_type = SD_TYPE_UNKNOWN;	/**< Card type detected during SD_Init(). */
-
 /**
  * @brief Assert the chip-select line (drives CS low, selects the card).
  *

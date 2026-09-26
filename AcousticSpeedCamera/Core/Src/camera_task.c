@@ -6,9 +6,10 @@
 #include "camera_ov5640.h"
 #include "os_objects.h"
 #include "logger.h"
+#include "jpeg_encoder.h"
 
-#define FRAME_WIDTH 320
-#define FRAME_HEIGHT 240
+#define FRAME_WIDTH 160
+#define FRAME_HEIGHT 120
 #define FRAME_BPP 2
 
 #define INIT_MAX_ATTEMPTS 3
@@ -38,7 +39,7 @@ void vCameraTask(void *parameter) {
 	for(int attempt = 0; attempt < INIT_MAX_ATTEMPTS && status != CAMERA_OK; attempt++) {
 		LOG_INFO("attempt=%d", attempt);
 		status = Camera_Init(&s_hcam, &cfg, frame_buf, sizeof(frame_buf),
-				OV5640_R320x240, OV5640_RGB565);
+				OV5640_R160x120, OV5640_RGB565);
 
 		if(status != CAMERA_OK) {
 			osDelay(200);
@@ -56,10 +57,6 @@ void vCameraTask(void *parameter) {
 
 	while(1) {
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-/*		if(Camera_CaptureSnapshot(&s_hcam) != CAMERA_OK) {
-			LOG_ERROR("failed to capture the snapshot");
-		}*/
 
 		uint8_t frame_ok = 0;
 
@@ -89,6 +86,21 @@ void vCameraTask(void *parameter) {
 
 		if(frame_ok) {
 			LOG_INFO("snapshot received");
+
+			uint32_t encode_start = HAL_GetTick();
+
+			uint8_t *jpeg_data;
+			uint32_t jpeg_len;
+			int enc_result = JPEG_Encode(frame_buf, FRAME_WIDTH, FRAME_HEIGHT, 75,
+				&jpeg_data, &jpeg_len);
+
+			uint32_t encode_time = HAL_GetTick() - encode_start;
+
+			if(enc_result != 0) {
+				LOG_ERROR("JPEG encoding failed");
+			}
+
+			LOG_INFO("JPEG encoded: %lu bytes, %lu ms", jpeg_len, encode_time);
 		}
 		else {
 			LOG_ERROR("snapshot permanently failed after %d attempts", SNAPSHOT_MAX_ATTEMPTS);

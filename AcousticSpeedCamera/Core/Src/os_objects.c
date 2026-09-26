@@ -36,7 +36,7 @@ const osThreadAttr_t displayTask_attr = {
 
 const osThreadAttr_t cameraTask_attr = {
 	.name = "cameraTask",
-	.stack_size = 10 * 1024,
+	.stack_size = 15 * 1024,
 	.priority = (osPriority_t) osPriorityAboveNormal,
 };
 

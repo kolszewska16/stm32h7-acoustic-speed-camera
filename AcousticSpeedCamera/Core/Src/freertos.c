@@ -116,7 +116,7 @@ void MX_FREERTOS_Init(void) {
   displayTaskHandle = osThreadNew(vDisplayTask, NULL, &displayTask_attr);
   cameraTaskHandle = osThreadNew(vCameraTask, NULL, &cameraTask_attr);
   audioTaskHandle = osThreadNew(vAudioTask, NULL, &audioTask_attr);
-  sdLoggerTaskHandle = osThreadNew(vSDLogTask, NULL, &sdLoggerTask_attr);
+//  sdLoggerTaskHandle = osThreadNew(vSDLogTask, NULL, &sdLoggerTask_attr);
   batteryTaskHandle = osThreadNew(vBatteryTask, NULL, &batteryTask_attr);
 
   /* USER CODE END RTOS_THREADS */
