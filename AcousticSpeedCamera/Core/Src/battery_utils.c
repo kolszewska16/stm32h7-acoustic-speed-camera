@@ -1,19 +1,4 @@
-#include "battery_monitor.h"
-#include "FreeRTOS.h"
-#include "cmsis_os2.h"
-#include "task.h"
-#include "os_objects.h"
-#include "ui.h"
-#include "logger.h"
-
-#define ADC_VREF 3.3f
-#define ADC_FULL_SCALE 4095.0f
-#define R_TOP 51000.0f
-#define R_BOT 16000.0f
-#define DIV_RATIO ((R_TOP + R_BOT) / R_BOT)
-#define N_SAMPLES 10
-#define BAT_CELLS 3
-#define EMA_ALPHA 0.2f
+#include "battery_utils.h"
 
 static const SocPoint_t soc_table[] = {
 	{4.20f, 100}, {4.11f, 90}, {4.02f, 80}, {3.95f, 70}, {3.87f, 60},
@@ -21,9 +6,6 @@ static const SocPoint_t soc_table[] = {
 	{3.61f, 5},   {3.27f, 0},
 };
 #define SOC_TABLE_LEN (sizeof(soc_table) / sizeof(soc_table[0]))
-
-static volatile float s_bat_voltage = 0.0f;
-static volatile uint8_t s_bat_percent = 0;
 
 float Battery_ReadVoltage(void) {
 	uint32_t sum = 0;
@@ -61,35 +43,4 @@ uint8_t Battery_VoltageToPercent(float v_pack) {
 	}
 
 	return 0;
-}
-
-void vBatteryTask(void *parameter) {
-	LOG_INFO("battery task start");
-
-	while(!camera_ready || !ui_ready) {
-		osDelay(50);
-	}
-
-	if(HAL_ADCEx_Calibration_Start(&hadc3, ADC_CALIB_OFFSET,
-		ADC_SINGLE_ENDED) != HAL_OK)
-	{
-		LOG_ERROR("ADC: initialization failed");
-		vTaskDelete(NULL);
-		return;
-	}
-
-	float filtered = Battery_ReadVoltage();
-	LOG_INFO("battery monitor initialization completed");
-
-	while(1) {
-		float v = Battery_ReadVoltage();
-		filtered += EMA_ALPHA * (v - filtered);
-
-		s_bat_voltage = filtered;
-		s_bat_percent = Battery_VoltageToPercent(filtered);
-
-		update_battery_status_label(s_bat_percent);
-
-		osDelay(pdMS_TO_TICKS(1000));
-	}
 }

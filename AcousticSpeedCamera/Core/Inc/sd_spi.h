@@ -184,14 +184,4 @@ sdStatus_t SD_WriteBlock_DMA(const sdCard_HandleTypeDef *sd, uint32_t block_addr
  */
 sdCardType_t SD_GetCardType(const sdCard_HandleTypeDef *sd);
 
-/**
- * @brief Returns the total capacity of the card in bytes.
- *
- * @return Card capacity in bytes.
- *
- * @todo Not yet implemented; requires parsing the CSD register via CMD9.
- * 		 Currently always returns 0.
- */
-uint64_t SD_GetCardSizeBytes(void);
-
 #endif /* INC_SD_SPI_H_ */

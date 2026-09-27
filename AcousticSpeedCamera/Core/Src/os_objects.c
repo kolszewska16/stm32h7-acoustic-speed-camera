@@ -2,6 +2,10 @@
 
 osSemaphoreId_t s_spi_dma_sem;
 QueueHandle_t xImageQueue;
+QueueHandle_t xUiAudioStatusQueue;
+QueueHandle_t xUiSdStatusQueue;
+QueueHandle_t xUiBatteryStatusQueue;
+QueueHandle_t xUiStatusQueue;
 
 volatile bool camera_ready = false;
 volatile bool sd_ready = false;
@@ -42,12 +46,12 @@ const osThreadAttr_t cameraTask_attr = {
 
 const osThreadAttr_t batteryTask_attr = {
 	.name = "batteryTask",
-	.stack_size = 3 * 1024,
+	.stack_size = 5 * 1024,
 	.priority = (osPriority_t) osPriorityNormal,
 };
 
 const osThreadAttr_t sdLoggerTask_attr = {
 	.name = "sdLoggerTask",
-	.stack_size = 4 * 1024,
+	.stack_size = 10 * 1024,
 	.priority = (osPriority_t) osPriorityNormal,
 };

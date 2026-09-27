@@ -4,10 +4,26 @@
 #include "os_objects.h"
 #include "audio_processor.h"
 #include "logger.h"
-#include "ui.h"
 
 #define NOISE_THRESHOLD 40.0f
 #define HOLD_OFF_TIME_MS 2000
+
+static void update_ui_audio_levels(float32_t dBA_avg, float32_t dBA_max) {
+	AudioLevelUpdate_t levels = {
+		.dBA_avg = dBA_avg,
+		.dBA_max = dBA_max,
+	};
+
+	xQueueOverwrite(xUiAudioStatusQueue, &levels);
+}
+
+static void update_ui_status_bar(const char *msg) {
+	UiStatusMsg_t status_msg;
+	strncpy(status_msg.text, msg, UI_STATUS_MSG_MAX_LEN - 1);
+	status_msg.text[UI_STATUS_MSG_MAX_LEN - 1] = '\0';
+
+	xQueueSend(xUiStatusQueue, &status_msg, 0);
+}
 
 void vAudioTask(void *parameter) {
 	LOG_INFO("audio task start");
@@ -55,7 +71,8 @@ void vAudioTask(void *parameter) {
 			dBA_max = dBA_avg;
 		}
 
-		update_ui(dBA_avg, dBA_max);
+		update_ui_audio_levels(dBA_avg, dBA_max);
+		update_ui_status_bar("[INFO] measuring...");
 	}
 
 	vTaskDelete(NULL);

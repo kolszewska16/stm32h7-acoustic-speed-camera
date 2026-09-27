@@ -141,11 +141,22 @@ void update_battery_status_label(uint8_t percent);
  *
  * @details
  *
+ * @param[in]
+ *
+ * @return None
+ */
+void update_sd_status_label(uint8_t percent_free);
+
+/**
+ * @brief
+ *
+ * @details
+ *
  * @param[in] dBA_avg
  * @param[in] dBA_max
  *
  * @return None
  */
-void update_ui(float32_t dBA_avg, float32_t dBA_max);
+void update_audio_ui(float32_t dBA_avg, float32_t dBA_max);
 
 #endif /* INC_UI_H_ */
