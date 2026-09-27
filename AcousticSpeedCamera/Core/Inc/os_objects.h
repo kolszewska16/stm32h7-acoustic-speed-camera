@@ -6,8 +6,18 @@
 #include "cmsis_os2.h"
 #include "semphr.h"
 
+#define UI_STATUS_MSG_MAX_LEN 64
+
+typedef struct {
+	char text[UI_STATUS_MSG_MAX_LEN];
+} UiStatusMsg_t;
+
 extern osSemaphoreId_t s_spi_dma_sem;
 extern QueueHandle_t xImageQueue;
+extern QueueHandle_t xUiAudioStatusQueue;
+extern QueueHandle_t xUiSdStatusQueue;
+extern QueueHandle_t xUiBatteryStatusQueue;
+extern QueueHandle_t xUiStatusQueue;
 
 extern volatile bool camera_ready;
 extern volatile bool sd_ready;

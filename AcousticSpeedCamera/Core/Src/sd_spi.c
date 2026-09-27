@@ -80,6 +80,7 @@ static uint8_t spi_txrx(const sdCard_HandleTypeDef *sd, uint8_t data) {
 	uint8_t rx = 0xFF;
 	if(HAL_SPI_TransmitReceive(sd->hspi, &data, &rx, 1, HAL_MAX_DELAY) != HAL_OK) {
 		sd->hspi->State = HAL_SPI_STATE_READY;
+		__HAL_UNLOCK(sd->hspi);
 		return 0xFF;
 	}
 
@@ -476,11 +477,4 @@ sdStatus_t SD_WriteBlock_DMA(const sdCard_HandleTypeDef *sd, uint32_t block_addr
 
 sdCardType_t SD_GetCardType(const sdCard_HandleTypeDef *sd) {
 	return sd->card_type;
-}
-
-uint64_t SD_GetCardSizeBytes(void) {
-	// TODO
-	// parse CSD from CMD9
-
-	return 0;
 }

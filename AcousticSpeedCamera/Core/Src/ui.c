@@ -33,7 +33,10 @@ static lv_obj_t *max_val_label;
 static lv_obj_t *norm_status_label;
 
 /** @brief Label showing the battery icon and charge level in percent. */
-static lv_obj_t *battery_label;
+static lv_obj_t *battery_status_label;
+
+/** @brief Label showing the SD card icon and remaining free space percentage. */
+static lv_obj_t *sd_status_label;
 
 /**
  * @brief Display currently being flushed via DMA.
@@ -107,11 +110,11 @@ void measurement_screen_init(void) {
 	lv_obj_align(norm_status_label, LV_ALIGN_TOP_LEFT, 15, 45);
 
 	// top-right: battery level, updated in battery_status_label()
-	battery_label = lv_label_create(scr);
-	lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_FULL " --%");
-	lv_obj_set_style_text_color(battery_label, lv_color_hex(0x95A5A6), LV_PART_MAIN);
-	lv_obj_set_style_text_font(battery_label, &lv_font_montserrat_14, LV_PART_MAIN);
-	lv_obj_align(battery_label, LV_ALIGN_TOP_RIGHT, -10, 15);
+	battery_status_label = lv_label_create(scr);
+	lv_label_set_text(battery_status_label, LV_SYMBOL_BATTERY_FULL " --%");
+	lv_obj_set_style_text_color(battery_status_label, lv_color_hex(0x95A5A6), LV_PART_MAIN);
+	lv_obj_set_style_text_font(battery_status_label, &lv_font_montserrat_14, LV_PART_MAIN);
+	lv_obj_align(battery_status_label, LV_ALIGN_TOP_RIGHT, -10, 15);
 
 	// top-right: peak dBA value recorded so far, updated in update_max_val_label()
 	max_val_label = lv_label_create(scr);
@@ -154,6 +157,13 @@ void measurement_screen_init(void) {
 	lv_label_set_long_mode(status_label, LV_LABEL_LONG_SCROLL_CIRCULAR);
 	lv_obj_set_style_text_font(status_label, &lv_font_montserrat_14, LV_PART_MAIN);
 	lv_obj_align(status_label, LV_ALIGN_LEFT_MID, 10, 0);
+
+	// bottom-right: SD card free space indicator, updated in update_sd_status_label()
+	sd_status_label = lv_label_create(scr);
+	lv_label_set_text(sd_status_label, LV_SYMBOL_SD_CARD " --%");
+	lv_obj_set_style_text_color(sd_status_label, lv_color_hex(0x95A5A6), LV_PART_MAIN);
+	lv_obj_set_style_text_font(sd_status_label, &lv_font_montserrat_14, LV_PART_MAIN);
+	lv_obj_align_to(sd_status_label, status_bar, LV_ALIGN_OUT_TOP_RIGHT, -15, -5);
 }
 
 void update_measurement_value(float32_t value) {
@@ -232,12 +242,38 @@ void update_battery_status_label(uint8_t percent) {
 	lv_snprintf(buf, sizeof(buf), "%s %d%%", symbol, (int)percent);
 
 	lv_lock();
-	lv_label_set_text(battery_label, buf);
-	lv_obj_set_style_text_color(battery_label, lv_color_hex(color), LV_PART_MAIN);
+	lv_label_set_text(battery_status_label, buf);
+	lv_obj_set_style_text_color(battery_status_label, lv_color_hex(color), LV_PART_MAIN);
 	lv_unlock();
 }
 
-void update_ui(float32_t dBA_avg, float32_t dBA_max) {
+void update_sd_status_label(uint8_t percent_free) {
+	if(percent_free > 100) {
+		percent_free = 100;
+	}
+
+	uint32_t color;
+
+	if(percent_free > 25) {
+		color = 0x2ECC71;
+	}
+	else if(percent_free > 10) {
+		color = 0xF39C12;
+	}
+	else {
+		color = 0xE74C3C;
+	}
+
+	char buf[32];
+	lv_snprintf(buf, sizeof(buf), "%s %d%%", LV_SYMBOL_SD_CARD, (int)percent_free);
+
+	lv_lock();
+	lv_label_set_text(sd_status_label, buf);
+	lv_obj_set_style_text_color(sd_status_label, lv_color_hex(color), LV_PART_MAIN);
+	lv_unlock();
+}
+
+void update_audio_ui(float32_t dBA_avg, float32_t dBA_max) {
 	uint32_t now = HAL_GetTick();
 	if((now - last_ui_update_tick) > UI_UPDATE_INTERVAL_MS) {
 		last_ui_update_tick = now;
@@ -245,7 +281,6 @@ void update_ui(float32_t dBA_avg, float32_t dBA_max) {
 		update_measurement_value(dBA_avg);
 		update_norm_status_label(dBA_avg);
 		update_max_val_label(dBA_max);
-		update_status_bar("[INFO] measuring...");
 		lv_unlock();
 	}
 }

@@ -1,5 +1,5 @@
-#ifndef INC_SD_LOGGER_H_
-#define INC_SD_LOGGER_H_
+#ifndef INC_SD_TASK_H_
+#define INC_SD_TASK_H_
 
 #include <stdint.h>
 #include "arm_math.h"
@@ -12,4 +12,4 @@ typedef struct {
 
 void vSDLogTask(void *argument);
 
-#endif /* INC_SD_LOGGER_H_ */
+#endif /* INC_SD_TASK_H_ */

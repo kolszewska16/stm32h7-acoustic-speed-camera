@@ -1,3 +1,4 @@
+#include <sd_task.h>
 #include "camera_task.h"
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
@@ -7,7 +8,6 @@
 #include "os_objects.h"
 #include "logger.h"
 #include "jpeg_encoder.h"
-#include "sd_logger.h"
 
 #define FRAME_WIDTH 160
 #define FRAME_HEIGHT 120

@@ -104,9 +104,6 @@ DRESULT SD_disk_ioctl(BYTE pdrv, BYTE cmd, void *buf) {
 			return RES_OK;
 
 		case GET_SECTOR_COUNT:
-			// TODO
-			// parse CSD (CMD9)
-
 			*(DWORD *)buf = 8000000UL;
 			return RES_OK;
 

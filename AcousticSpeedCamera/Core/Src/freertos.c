@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <battery_task.h>
+#include <sd_task.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
@@ -29,13 +31,10 @@
 #include <string.h>
 
 #include "fatfs.h"
-#include "hardware.h"
 #include "os_objects.h"
-#include "sd_logger.h"
 #include "audio_task.h"
 #include "display_task.h"
 #include "camera_task.h"
-#include "battery_monitor.h"
 
 /* USER CODE END Includes */
 
@@ -104,6 +103,10 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
 	xImageQueue = xQueueCreate(2, sizeof(ImageSaveRequest_t));
+	xUiAudioStatusQueue = xQueueCreate(1, sizeof(AudioLevelUpdate_t));
+	xUiSdStatusQueue = xQueueCreate(1, sizeof(uint8_t));
+	xUiBatteryStatusQueue = xQueueCreate(1, sizeof(uint8_t));
+	xUiStatusQueue = xQueueCreate(3, sizeof(UiStatusMsg_t));
 
   /* USER CODE END RTOS_QUEUES */
 
